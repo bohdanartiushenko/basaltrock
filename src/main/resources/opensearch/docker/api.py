@@ -1,7 +1,4 @@
 #!/usr/bin/env python3
-"""
-Main FastAPI application combining Bedrock-compatible and Basaltrock simple APIs.
-"""
 
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
@@ -25,12 +22,10 @@ async def lifespan(app: FastAPI):
 app = FastAPI(lifespan=lifespan)
 templates = Jinja2Templates(directory="/app")
 
-# Mount routers
 app.include_router(bedrock_router)
 app.include_router(basaltrock_router)
 
 
-# ── Web UI ────────────────────────────────────────────────────────────────────
 @app.get("/")
 def index(request: Request):
     return templates.TemplateResponse(
@@ -40,7 +35,6 @@ def index(request: Request):
     )
 
 
-# ── Health ────────────────────────────────────────────────────────────────────
 @app.get("/health")
 def health():
     count = os_client.count(index=INDEX_NAME, body={"query": {"match_all": {}}})["count"]

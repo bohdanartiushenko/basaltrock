@@ -9,11 +9,7 @@ import software.amazon.awssdk.services.bedrockruntime.BedrockRuntimeAsyncClient;
 import java.net.URI;
 
 public final class AwsBedrockUtils {
-    /**
-     * Creates a Bedrock Runtime async client configured to use this container.
-     *
-     * @return a configured BedrockRuntimeAsyncClient
-     */
+
     public static BedrockRuntimeAsyncClient createBedrockRuntimeAsyncClient(ComposeBasaltrockContainer container) {
         return BedrockRuntimeAsyncClient.builder()
                 .endpointOverride(URI.create(container.getBaseUrl()))
@@ -23,11 +19,6 @@ public final class AwsBedrockUtils {
                 .build();
     }
 
-    /**
-     * Creates a Bedrock Agent Runtime client configured to use this container.
-     *
-     * @return a configured BedrockAgentRuntimeClient
-     */
     public static BedrockAgentRuntimeClient createBedrockAgentRuntimeClient(ComposeBasaltrockContainer container) {
         return BedrockAgentRuntimeClient.builder()
                 .endpointOverride(URI.create(container.getBaseUrl()))

@@ -1,11 +1,4 @@
 #!/usr/bin/env python3
-"""
-Simple Basaltrock API endpoints for curl-based testing.
-Implements:
-- GET /basaltrock/chat - Simple chat
-- GET /basaltrock/search - Knowledge base search only
-- GET /basaltrock/search/kb - RAG (search + chat with context)
-"""
 
 from fastapi import APIRouter, Request
 
@@ -16,13 +9,11 @@ router = APIRouter()
 
 
 def format_sources(hits):
-    """Format hit list into sources response format."""
     return [{"file": h["file"], "text": h["text"], "score": s} for s, h in hits]
 
 
 @router.get("/basaltrock/chat")
 def chat_simple(q: str):
-    """Simple GET endpoint for curl: /basaltrock/chat?q=your+question"""
     messages = [{"role": "user", "content": q}]
     response = client.chat.completions.create(
         model=CHAT_MODEL,
@@ -37,14 +28,12 @@ def chat_simple(q: str):
 
 @router.get("/basaltrock/search")
 def search_simple(q: str, limit: int = 5):
-    """Simple GET endpoint for curl: /basaltrock/search?q=your+query&limit=5"""
     hits = vector_search(q, limit)
     return {"results": format_sources(hits)}
 
 
 @router.post("/basaltrock/search/kb")
 async def search_kb_with_chat(request: Request):
-    """RAG endpoint: search knowledge base then answer with context (Bedrock-style JSON body)"""
     body = await request.json()
     q = body.get("retrievalQuery", {}).get("text")
     limit = body.get("retrievalConfiguration", {}).get("vectorSearchConfiguration", {}).get("numberOfResults", 5)

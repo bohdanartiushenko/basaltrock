@@ -17,17 +17,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Example showing chat streaming with Basaltrock RAG API.
- *
- * <p>Prerequisites: Basaltrock container must be running at http://localhost:8080
- *
- * <p>Run:
- * <pre>
- * cd examples
- * ./gradlew run --args="chat"
- * </pre>
- */
 public class ChatStreamingExample {
 
     static final Logger logger = LoggerFactory.getLogger(ChatStreamingExample.class);
@@ -35,14 +24,12 @@ public class ChatStreamingExample {
     static final String MODEL_ID = "anthropic.claude-3-sonnet-20240229-v1:0";
 
     public static void main(String[] args) throws Exception {
-        String question = args.length > 0 ? String.join(" ", args) : "How much is two plus two?";
+        var question = args.length > 0 ? String.join(" ", args) : "How much is two plus two?";
 
-        // Ensure container is running (starts it if needed)
         ContainerManager.ensureContainerRunning("src/main/resources/data");
 
         logger.info("\n=== Chat Streaming Example ===");
         logger.info("Question: {}", question);
-        logger.info("Answer: ");
 
         streamChat(question);
     }
@@ -60,7 +47,7 @@ public class ChatStreamingExample {
                                             var text = json.path("delta").path("text").asText();
                                             if (!text.isEmpty()) {
                                                 textChunks.add(text);
-                                                System.out.print(text); // Print as it arrives
+                                                System.out.print(text);
                                             }
                                         }
                                     } catch (Exception e) {
@@ -88,9 +75,7 @@ public class ChatStreamingExample {
                     .build();
 
             bedrockClient.invokeModelWithResponseStream(request, handler).join();
-            System.out.println(); // New line after streaming
-
-            logger.info("✓ Chat streaming completed");
+            System.out.println();
         }
     }
 }

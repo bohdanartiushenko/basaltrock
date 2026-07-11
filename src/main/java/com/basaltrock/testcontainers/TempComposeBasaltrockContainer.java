@@ -15,10 +15,6 @@ import java.nio.file.Path;
 import java.util.Collections;
 import java.util.stream.Stream;
 
-/**
- * Testcontainer that manages a temporary Docker context directory.
- * The temp directory is automatically cleaned up when the container stops.
- */
 public class TempComposeBasaltrockContainer extends ComposeBasaltrockContainer {
 
     static final Logger logger = LoggerFactory.getLogger(TempComposeBasaltrockContainer.class);

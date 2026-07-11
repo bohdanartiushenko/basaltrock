@@ -8,9 +8,6 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.net.URISyntaxException;
 
-/**
- * Base class for Basaltrock tests that provides shared Docker context setup.
- */
 public abstract class BaseBasaltrockTest {
 
     static final Logger logger = LoggerFactory.getLogger(BaseBasaltrockTest.class);
