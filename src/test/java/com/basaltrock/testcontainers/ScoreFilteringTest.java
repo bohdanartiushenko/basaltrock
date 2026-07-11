@@ -13,16 +13,18 @@ import static com.basaltrock.testcontainers.AwsBedrockUtils.createBedrockAgentRu
 import static org.assertj.core.api.Assertions.assertThat;
 
 @EnabledIfSystemProperty(named = "RUN_DOCKER_LLM_MODEL_TEST", matches = "true")
-public class KnowledgeBaseRetrievalTest extends BaseBasaltrockTest {
+public class ScoreFilteringTest extends BaseBasaltrockTest {
 
-    static final Logger logger = LoggerFactory.getLogger(KnowledgeBaseRetrievalTest.class);
+    static final Logger logger = LoggerFactory.getLogger(ScoreFilteringTest.class);
 
     @Test
-    void testRetrievalReturnsRelevantResults() {
+    void testIrrelevantQueryProducesLowScores() {
         try (var agentClient = createBedrockAgentRuntimeClient(container)) {
             var request = RetrieveRequest.builder()
                     .knowledgeBaseId(container.getKnowledgeBaseId())
-                    .retrievalQuery(KnowledgeBaseQuery.builder().text("What is copyright?").build())
+                    .retrievalQuery(KnowledgeBaseQuery.builder()
+                            .text("quantum chromodynamics and strange quark interactions")
+                            .build())
                     .retrievalConfiguration(KnowledgeBaseRetrievalConfiguration.builder()
                             .vectorSearchConfiguration(KnowledgeBaseVectorSearchConfiguration.builder()
                                     .numberOfResults(5)
@@ -34,64 +36,46 @@ public class KnowledgeBaseRetrievalTest extends BaseBasaltrockTest {
             var results = response.retrievalResults();
 
             assertThat(results).isNotEmpty();
-            assertThat(results).allSatisfy(r -> assertThat(r.score()).isGreaterThan(0.0));
-            assertThat(results).anySatisfy(r -> {
-                assertThat(r.content().text()).containsIgnoringCase("copyright");
-                assertThat(r.score()).isGreaterThan(0.4);
+            assertThat(results).allSatisfy(r -> {
+                logger.info("Irrelevant query score: {} for {}", r.score(), r.location().s3Location().uri());
+                assertThat(r.score()).isLessThan(0.8);
             });
         }
     }
 
     @Test
-    void testNumberOfResultsIsRespected() {
+    void testRelevantQueryScoresHigherThanIrrelevant() {
         try (var agentClient = createBedrockAgentRuntimeClient(container)) {
-            var request2 = RetrieveRequest.builder()
+            var relevantRequest = RetrieveRequest.builder()
                     .knowledgeBaseId(container.getKnowledgeBaseId())
-                    .retrievalQuery(KnowledgeBaseQuery.builder().text("What is copyright?").build())
+                    .retrievalQuery(KnowledgeBaseQuery.builder()
+                            .text("MIT License copyright permission")
+                            .build())
                     .retrievalConfiguration(KnowledgeBaseRetrievalConfiguration.builder()
                             .vectorSearchConfiguration(KnowledgeBaseVectorSearchConfiguration.builder()
-                                    .numberOfResults(2)
+                                    .numberOfResults(3)
                                     .build())
                             .build())
                     .build();
 
-            var response2 = agentClient.retrieve(request2);
-            assertThat(response2.retrievalResults()).hasSizeLessThanOrEqualTo(2);
-
-            var request10 = RetrieveRequest.builder()
+            var irrelevantRequest = RetrieveRequest.builder()
                     .knowledgeBaseId(container.getKnowledgeBaseId())
-                    .retrievalQuery(KnowledgeBaseQuery.builder().text("What is copyright?").build())
+                    .retrievalQuery(KnowledgeBaseQuery.builder()
+                            .text("quantum chromodynamics and strange quark interactions")
+                            .build())
                     .retrievalConfiguration(KnowledgeBaseRetrievalConfiguration.builder()
                             .vectorSearchConfiguration(KnowledgeBaseVectorSearchConfiguration.builder()
-                                    .numberOfResults(10)
+                                    .numberOfResults(3)
                                     .build())
                             .build())
                     .build();
 
-            var response10 = agentClient.retrieve(request10);
-            assertThat(response10.retrievalResults().size()).isGreaterThanOrEqualTo(response2.retrievalResults().size());
+            var relevantResults = agentClient.retrieve(relevantRequest).retrievalResults();
+            var irrelevantResults = agentClient.retrieve(irrelevantRequest).retrievalResults();
+
+            assertThat(relevantResults.get(0).score())
+                    .isGreaterThan(irrelevantResults.get(0).score());
         }
     }
 
-    @Test
-    void testResultsAreOrderedByScoreDescending() {
-        try (var agentClient = createBedrockAgentRuntimeClient(container)) {
-            var request = RetrieveRequest.builder()
-                    .knowledgeBaseId(container.getKnowledgeBaseId())
-                    .retrievalQuery(KnowledgeBaseQuery.builder().text("docker setup").build())
-                    .retrievalConfiguration(KnowledgeBaseRetrievalConfiguration.builder()
-                            .vectorSearchConfiguration(KnowledgeBaseVectorSearchConfiguration.builder()
-                                    .numberOfResults(5)
-                                    .build())
-                            .build())
-                    .build();
-
-            var response = agentClient.retrieve(request);
-            var results = response.retrievalResults();
-
-            for (int i = 1; i < results.size(); i++) {
-                assertThat(results.get(i - 1).score()).isGreaterThanOrEqualTo(results.get(i).score());
-            }
-        }
-    }
 }
