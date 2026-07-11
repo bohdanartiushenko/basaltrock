@@ -14,7 +14,7 @@ package "Docker Compose" {
     database "k-NN Index"
   }
 
-  rectangle "Scanner Container" as ingestion #LightGreen {
+  rectangle "Ingestion Container" as ingestion #LightGreen {
     component "ingestion.py"
   }
 

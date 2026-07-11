@@ -15,35 +15,24 @@ repositories {
 }
 
 dependencies {
-    // Testcontainers BOM for version management
     api platform('org.testcontainers:testcontainers-bom:2.0.5')
-
-    // Testcontainers core - main library dependency
     api 'org.testcontainers:testcontainers'
 
-    // JUnit 5 - test only
     testImplementation platform('org.junit:junit-bom:6.1.0')
     testImplementation 'org.junit.jupiter:junit-jupiter-api'
     testImplementation 'org.testcontainers:testcontainers-junit-jupiter'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
-    // AWS SDK for Bedrock - exposed as api for examples subproject
     api platform('software.amazon.awssdk:bom:2.46.12')
     api 'software.amazon.awssdk:bedrockruntime'
     api 'software.amazon.awssdk:bedrockagentruntime'
     api 'software.amazon.awssdk:netty-nio-client'
 
-    // Jackson for JSON - exposed as api for examples subproject
     api 'com.fasterxml.jackson.core:jackson-databind:2.22.0'
-
-    // Commons IO - exposed as api for examples subproject
     api 'commons-io:commons-io:2.22.0'
 
-    // AssertJ for assertions - test only
     testImplementation 'org.assertj:assertj-core:3.27.7'
-
-    // Logging - test only
     testImplementation 'ch.qos.logback:logback-classic:1.5.34'
     testImplementation 'org.slf4j:slf4j-api:2.0.18'
 }

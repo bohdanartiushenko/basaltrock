@@ -11,7 +11,7 @@ package "Docker" {
 
     database "OpenSearch\nIndex" as opensearch
 
-  rectangle "Scanner Service" as ingestion #LightGreen
+  rectangle "Ingestion Service" as ingestion #LightGreen
   rectangle "API Service" as api #LightBlue
 
 package "Model Runner" #LightPink {

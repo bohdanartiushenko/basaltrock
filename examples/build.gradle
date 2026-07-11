@@ -23,7 +23,6 @@ application {
     mainClass = 'com.basaltrock.examples.bedrock.ChatStreamingExample'
 }
 
-// Tasks for running specific examples
 tasks.register('runChat', JavaExec) {
     classpath = sourceSets.main.runtimeClasspath
     mainClass = 'com.basaltrock.examples.bedrock.ChatStreamingExample'
