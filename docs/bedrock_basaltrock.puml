@@ -1,0 +1,68 @@
+do@startuml
+
+!include https://raw.githubusercontent.com/awslabs/aws-icons-for-plantuml/1540f226ffdd2ea0e188173c51b2c0392340dace/dist/AWSCommon.puml
+!include https://raw.githubusercontent.com/awslabs/aws-icons-for-plantuml/1540f226ffdd2ea0e188173c51b2c0392340dace/dist/Database/AuroraMariaDBInstance.puml
+
+
+
+
+' ── Actors ──────────────────────────────────────────────
+actor "User" as user
+
+' ── Backend ─────────────────────────────────────────────
+package "backend" {
+  component service
+  interface jdbc
+  interface awsclient
+  service -- "jdbc"
+  service -- awsclient
+}
+user <--> service : chat
+
+
+package "Docker" {
+AuroraMariaDBInstance(db, "testcontainer","database")
+
+"jdbc" <--> db: SQL
+
+package basaltrock {
+  package "API Service" #LightBlue {
+    rectangle "bedrock_api.py" as bedrockapi
+    rectangle "shared.py\nVector Store" as shared
+  }
+
+    package "Scanner Service" #LightGreen {
+      rectangle "ingestion.py" as ingestion
+      folder "data/" as datafiles
+    }
+
+  database "embeddings.pkl\ncache" as cache
+
+  ingestion --> datafiles : read
+  ingestion --> cache : write embeddings
+  shared --> cache : load embeddings
+}
+
+package "Model Runner" #LightPink {
+  rectangle "llama.cpp" as modelrunner
+  component "ai/gemma3:1B-Q4_K_M\nChat Model" as chatmodel
+  component "ai/nomic-embed-text-v2-moe\nEmbedding Model" as embedmodel
+
+  modelrunner --> chatmodel
+  modelrunner --> embedmodel
+}
+}
+
+
+
+awsclient ---> bedrockapi : vector search (top-K)
+awsclient ---> bedrockapi : system prompts \n (top-K) \n query
+
+bedrockapi --> shared
+
+
+ingestion --> embedmodel : create embeddings
+shared --> embedmodel : query embedding
+shared --> chatmodel : generate response
+
+@enduml

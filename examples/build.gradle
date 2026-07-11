@@ -1,0 +1,41 @@
+plugins {
+    id 'java'
+    id 'application'
+}
+
+group = 'com.basaltrock.examples'
+version = '1.0-SNAPSHOT'
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation project(':')
+}
+
+application {
+    mainClass = 'com.basaltrock.examples.bedrock.ChatStreamingExample'
+}
+
+// Tasks for running specific examples
+tasks.register('runChat', JavaExec) {
+    classpath = sourceSets.main.runtimeClasspath
+    mainClass = 'com.basaltrock.examples.bedrock.ChatStreamingExample'
+    if (project.hasProperty('args')) {
+        args project.args.split('\\s+')
+    }
+}
+
+tasks.register('runKb', JavaExec) {
+    classpath = sourceSets.main.runtimeClasspath
+    mainClass = 'com.basaltrock.examples.bedrock.KnowledgeBaseRetrievalExample'
+    if (project.hasProperty('args')) {
+        args project.args.split('\\s+')
+    }
+}

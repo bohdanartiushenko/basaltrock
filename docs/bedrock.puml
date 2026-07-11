@@ -1,0 +1,63 @@
+@startuml
+
+
+!include https://raw.githubusercontent.com/awslabs/aws-icons-for-plantuml/1540f226ffdd2ea0e188173c51b2c0392340dace/dist/AWSCommon.puml
+!include https://raw.githubusercontent.com/awslabs/aws-icons-for-plantuml/1540f226ffdd2ea0e188173c51b2c0392340dace/dist/BusinessApplications/all.puml
+!include https://raw.githubusercontent.com/awslabs/aws-icons-for-plantuml/1540f226ffdd2ea0e188173c51b2c0392340dace/dist/Storage/SimpleStorageService.puml
+!include https://raw.githubusercontent.com/awslabs/aws-icons-for-plantuml/1540f226ffdd2ea0e188173c51b2c0392340dace/dist/ApplicationIntegration/EventBridgeScheduler.puml
+!include https://raw.githubusercontent.com/awslabs/aws-icons-for-plantuml/1540f226ffdd2ea0e188173c51b2c0392340dace/dist/SecurityIdentityCompliance/IdentityAccessManagementRole.puml
+!include https://raw.githubusercontent.com/awslabs/aws-icons-for-plantuml/1540f226ffdd2ea0e188173c51b2c0392340dace/dist/ArtificialIntelligence/Bedrock.puml
+!include https://raw.githubusercontent.com/awslabs/aws-icons-for-plantuml/1540f226ffdd2ea0e188173c51b2c0392340dace/dist/ArtificialIntelligence/Textract.puml
+!include https://raw.githubusercontent.com/awslabs/aws-icons-for-plantuml/1540f226ffdd2ea0e188173c51b2c0392340dace/dist/Serverless/Serverless.puml
+!include https://raw.githubusercontent.com/awslabs/aws-icons-for-plantuml/1540f226ffdd2ea0e188173c51b2c0392340dace/dist/Analytics/OpenSearchServiceIndex.puml
+!include https://raw.githubusercontent.com/awslabs/aws-icons-for-plantuml/1540f226ffdd2ea0e188173c51b2c0392340dace/dist/Database/AuroraMariaDBInstance.puml
+
+
+' ── Actors ──────────────────────────────────────────────
+actor "User" as user
+
+' ── Backend ─────────────────────────────────────────────
+package "backend" {
+  component service
+  interface jdbc
+  interface awsclient
+  service -- "jdbc"
+  service -- awsclient
+}
+user <--> service : chat
+AuroraMariaDBInstance(db, "","database")
+"jdbc" <--> db: SQL
+
+OpenSearchServiceIndex(osindex, "documents", "bedrock kb vector")
+
+' ── AWS Bedrock ──────────────────────────────────────────
+package "AWS Bedrock" #LightCyan {
+  Bedrock(claude, "claude/nano/chatgpt/etc","Claude/etc Streaming")
+  component "<$Textract>\n\nKnowledge Base" as kb
+
+
+  osindex <--> kb
+  claude <--> kb
+}
+
+
+
+' ── Request flow (solid) ─────────────────────────────────
+
+awsclient ---> claude : vector search (top-K)
+awsclient ---> claude : system prompts \n (top-K) \n query
+
+
+
+
+' ── Weekly Sync (TBD) ───────────────────────────────────
+
+    SimpleStorageService(s3, "knowledge-base files", "S3 bucket", "html, pdf, texts")
+   EventBridgeScheduler(syncMechanism, "bedrock-knowledge-base-weekly-sync", "cron 0 0 ? * 1 *")
+
+
+s3 --> syncMechanism: sync
+syncMechanism --> osindex: sync
+
+
+@enduml
