@@ -3,6 +3,7 @@
 import base64
 import json
 import logging
+import os
 import struct
 import zlib
 from fastapi import APIRouter, HTTPException, Request
@@ -114,6 +115,37 @@ async def converse_stream(model_id: str, request: Request):
             logger.exception("Converse streaming failed (model=%s)", CHAT_MODEL)
 
     return StreamingResponse(event_stream(), media_type="application/vnd.amazon.eventstream")
+
+
+@router.post("/guardrail/{guardrail_id}/version/{guardrail_version}/apply")
+async def apply_guardrail(guardrail_id: str, guardrail_version: str, request: Request):
+    body = await request.json()
+    content_blocks = body.get("content", [])
+    text_parts = []
+    for block in content_blocks:
+        if "text" in block:
+            text_parts.append(block["text"].get("text", ""))
+    full_text = " ".join(text_parts).lower()
+
+    blocked_words = os.environ.get("GUARDRAIL_BLOCKED_WORDS", "").lower().split(",")
+    blocked_words = [w.strip() for w in blocked_words if w.strip()]
+
+    intervened = any(w in full_text for w in blocked_words) if blocked_words else False
+
+    if intervened:
+        return {
+            "usage": {"topicPolicyUnits": 1, "contentPolicyUnits": 1, "wordPolicyUnits": 1, "sensitiveInformationPolicyUnits": 0, "sensitiveInformationPolicyFreeUnits": 0, "contextualGroundingPolicyUnits": 0},
+            "action": "GUARDRAIL_INTERVENED",
+            "actionReason": "Content blocked by guardrail policy",
+            "outputs": [{"text": "Sorry, I can't respond to this request."}],
+            "assessments": [{"wordPolicy": {"customWords": [{"match": w, "action": "BLOCKED"} for w in blocked_words if w in full_text]}}],
+        }
+    return {
+        "usage": {"topicPolicyUnits": 1, "contentPolicyUnits": 1, "wordPolicyUnits": 1, "sensitiveInformationPolicyUnits": 0, "sensitiveInformationPolicyFreeUnits": 0, "contextualGroundingPolicyUnits": 0},
+        "action": "NONE",
+        "outputs": [{"text": t} for t in text_parts],
+        "assessments": [],
+    }
 
 
 @router.post("/model/{model_id:path}/count-tokens")
