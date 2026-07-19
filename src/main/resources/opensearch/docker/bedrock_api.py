@@ -116,6 +116,24 @@ async def converse_stream(model_id: str, request: Request):
     return StreamingResponse(event_stream(), media_type="application/vnd.amazon.eventstream")
 
 
+@router.post("/model/{model_id:path}/count-tokens")
+async def count_tokens(model_id: str, request: Request):
+    body = await request.json()
+    inp = body.get("input", {})
+    text = ""
+    if "converse" in inp:
+        converse = inp["converse"]
+        for s in converse.get("system", []):
+            text += s.get("text", "") + " "
+        for m in converse.get("messages", []):
+            for c in m.get("content", []):
+                text += c.get("text", "") + " "
+    elif "invokeModel" in inp:
+        text = inp["invokeModel"].get("body", "")
+    token_count = max(1, len(text) // 4)
+    return {"inputTokens": token_count}
+
+
 @router.post("/model/{model_id:path}/invoke")
 async def invoke_model(model_id: str, request: Request):
     oai_messages, max_tokens, temperature = _build_oai_messages(await request.json())
