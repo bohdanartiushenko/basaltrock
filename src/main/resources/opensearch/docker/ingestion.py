@@ -78,7 +78,11 @@ def _load_chunks(folder: str) -> list[tuple[str, str]]:
         for f in sorted(pathlib.Path(folder).rglob(pattern)):
             if f.name.startswith("._"):
                 continue
-            text = _extract_text(f)
+            try:
+                text = _extract_text(f)
+            except Exception as e:
+                print(f"  {f.name}: SKIPPED ({e})")
+                continue
             chunk_texts = text_splitter.split_text(text)
             print(f"  {f.name}: {len(chunk_texts)} chunks")
             for chunk in chunk_texts:

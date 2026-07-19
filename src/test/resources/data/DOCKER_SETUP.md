@@ -19,8 +19,7 @@ src/main/resources/opensearch/docker/
 ├── docker-compose.yml      # 3 services: opensearch, ingestion, api
 ├── api.py                  # FastAPI with OpenSearch client
 ├── shared.py               # OpenSearch k-NN queries
-├── bedrock_api.py          # AWS Bedrock endpoints
-├── basaltrock_api.py       # Simple GET endpoints
+├── bedrock_api.py          # AWS Bedrock-compatible endpoints
 └── ingestion.py                 # Uploads to OpenSearch
 ```
 
@@ -40,7 +39,7 @@ FROM python:3.12-slim AS ingestion
 ```dockerfile
 FROM python:3.13-slim AS api
 # Installs fastapi, hypercorn, openai
-# Copies api.py, shared.py, bedrock_api.py, basaltrock_api.py
+# Copies api.py, shared.py, bedrock_api.py
 # Exposes port 80
 ```
 
@@ -107,16 +106,15 @@ docker compose up -d
 
 ## API Endpoints
 
-The API service provides two types of endpoints:
+All endpoints are AWS Bedrock-compatible (work with the AWS SDK):
 
-### AWS Bedrock-Compatible API (for SDK testing)
-- **POST** `/model/{model_id}/invoke-with-response-stream` - Chat streaming with AWS event stream format
+- **POST** `/model/{model_id}/invoke` - Invoke model (sync)
+- **POST** `/model/{model_id}/invoke-with-response-stream` - Invoke model (streaming)
+- **POST** `/model/{model_id}/converse` - Converse API (sync)
+- **POST** `/model/{model_id}/converse-stream` - Converse API (streaming)
 - **POST** `/knowledgebases/{knowledge_base_id}/retrieve` - Knowledge base retrieval
-
-### Simple Basaltrock API (for curl testing)
-- **GET** `/basaltrock/chat?q=question` - Simple chat (no KB context)
-- **GET** `/basaltrock/search?q=query&limit=5` - Search knowledge base only
-- **GET** `/basaltrock/search/kb?q=question&limit=5` - RAG: search KB + answer with context
+- **POST** `/retrieveAndGenerate` - Retrieve and generate (RAG, sync)
+- **POST** `/retrieveAndGenerateStream` - Retrieve and generate (RAG, streaming)
 
 ### Health Check
 ```bash
@@ -133,14 +131,15 @@ curl http://localhost:80/health
 
 ### Example curl commands
 ```bash
-# Simple chat
-curl "http://localhost:80/basaltrock/chat?q=What+is+2+plus+2"
+# Retrieve from knowledge base
+curl -X POST http://localhost:80/knowledgebases/basaltrock-knowledge-base-id/retrieve \
+  -H "Content-Type: application/json" \
+  -d '{"retrievalQuery":{"text":"copyright"},"retrievalConfiguration":{"vectorSearchConfiguration":{"numberOfResults":3}}}'
 
-# Search knowledge base
-curl "http://localhost:80/basaltrock/search?q=copyright&limit=3"
-
-# RAG with context
-curl "http://localhost:80/basaltrock/search/kb?q=What+is+copyright&limit=5"
+# Retrieve and generate (RAG)
+curl -X POST http://localhost:80/retrieveAndGenerate \
+  -H "Content-Type: application/json" \
+  -d '{"input":{"text":"What is copyright?"},"retrieveAndGenerateConfiguration":{"type":"KNOWLEDGE_BASE","knowledgeBaseConfiguration":{"knowledgeBaseId":"basaltrock-knowledge-base-id","modelArn":"ai/gemma3:1B-Q4_K_M","retrievalConfiguration":{"vectorSearchConfiguration":{"numberOfResults":5}}}}}'
 ```
 
 ## Volumes

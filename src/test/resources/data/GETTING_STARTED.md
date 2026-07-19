@@ -37,17 +37,18 @@ RUN_DOCKER_LLM_MODEL_TEST=true ./gradlew test --info
 
 ### Testing with curl
 
-The service provides simple GET endpoints for quick testing (one needs to deploy docker manually):
+The service provides AWS Bedrock-compatible endpoints (one needs to deploy docker manually):
 
 ```bash
-# Simple chat
-curl "http://localhost:80/basaltrock/chat?q=What+is+machine+learning"
+# Retrieve from knowledge base
+curl -X POST http://localhost:80/knowledgebases/basaltrock-knowledge-base-id/retrieve \
+  -H "Content-Type: application/json" \
+  -d '{"retrievalQuery":{"text":"testcontainers"},"retrievalConfiguration":{"vectorSearchConfiguration":{"numberOfResults":5}}}'
 
-# Search knowledge base
-curl "http://localhost:80/basaltrock/search?q=testcontainers&limit=5"
-
-# RAG: search + answer with context
-curl "http://localhost:80/basaltrock/search/kb?q=How+do+I+use+testcontainers"
+# Retrieve and generate (RAG)
+curl -X POST http://localhost:80/retrieveAndGenerate \
+  -H "Content-Type: application/json" \
+  -d '{"input":{"text":"How do I use testcontainers?"},"retrieveAndGenerateConfiguration":{"type":"KNOWLEDGE_BASE","knowledgeBaseConfiguration":{"knowledgeBaseId":"basaltrock-knowledge-base-id","modelArn":"ai/gemma3:1B-Q4_K_M","retrievalConfiguration":{"vectorSearchConfiguration":{"numberOfResults":5}}}}}'
 ```
 
 ## Project Structure
@@ -133,8 +134,15 @@ The tests in this project:
 
 ### Test Examples Included
 
-1. **ChatStreamingTest**, **KnowledgeBaseRetrievalTest**: Complete example with Bedrock client demonstrating chat streaming and knowledge base retrieval
-2. **AwsBedrockUtils**: Helper class for creating AWS Bedrock clients
+1. **ChatStreamingTest**: Chat streaming with InvokeModelWithResponseStream
+2. **ConverseTest** / **ConverseStreamTest**: Converse API (sync and streaming)
+3. **InvokeModelTest**: Sync model invocation
+4. **KnowledgeBaseRetrievalTest**: Knowledge base vector search retrieval
+5. **RetrieveAndGenerateTest**: RAG with citations and generation config
+6. **RetrieveAndGenerateStreamTest**: Streaming RAG
+7. **DeterminismTest**: Temperature=0 deterministic output validation
+8. **ScoreFilteringTest**: Score-based relevance filtering
+9. **AwsBedrockUtils**: Helper class for creating AWS Bedrock clients
 
 ## Next Steps
 

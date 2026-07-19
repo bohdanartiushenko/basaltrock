@@ -13,7 +13,6 @@ A local, Docker-based test container for mocking and testing AWS Bedrock API cal
 - ✅ **Testcontainers Integration**: JUnit 5 compatible containers for easy testing
 - ✅ **Docker Compose Support**: Orchestrate complex multi-container setups
 - ✅ **AWS Bedrock Compatibility**: Works with AWS SDK for Bedrock clients
-- ✅ **Simple REST API**: GET endpoints for curl-based testing
 - ✅ **OpenSearch Backend**: k-NN vector search with OpenSearch
 - ✅ **Latest Testcontainers**: Using Testcontainers 2.0.5
 - ✅ **Java 21+**: Modern Java support with Gradle 8.10.2
@@ -37,16 +36,20 @@ Then open **http://localhost:80**. See [DOCKER_SETUP.md](DOCKER_SETUP.md) for de
 RUN_DOCKER_LLM_MODEL_TEST=true ./gradlew test
 ```
 
-### Try the Simple API
+### Try the API
 ```bash
-# Simple chat
-curl "http://localhost:80/basaltrock/chat?q=What+is+2+plus+2"
+# Health check
+curl http://localhost:80/health
 
-# Search knowledge base
-curl "http://localhost:80/basaltrock/search?q=copyright"
+# Retrieve from knowledge base
+curl -X POST http://localhost:80/knowledgebases/basaltrock-knowledge-base-id/retrieve \
+  -H "Content-Type: application/json" \
+  -d '{"retrievalQuery":{"text":"copyright"},"retrievalConfiguration":{"vectorSearchConfiguration":{"numberOfResults":3}}}'
 
-# RAG with context
-curl "http://localhost:80/basaltrock/search/kb?q=What+is+copyright"
+# Retrieve and generate (RAG)
+curl -X POST http://localhost:80/retrieveAndGenerate \
+  -H "Content-Type: application/json" \
+  -d '{"input":{"text":"What is copyright?"},"retrieveAndGenerateConfiguration":{"type":"KNOWLEDGE_BASE","knowledgeBaseConfiguration":{"knowledgeBaseId":"basaltrock-knowledge-base-id","modelArn":"ai/gemma3:1B-Q4_K_M","retrievalConfiguration":{"vectorSearchConfiguration":{"numberOfResults":5}}}}}'
 ```
 
 ## Project Structure

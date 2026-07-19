@@ -187,7 +187,7 @@ def _parse_kb_request(body: dict) -> tuple[str, str, int, dict]:
     }
 
 
-def _do_rag(query: str, num_results: int, gen_opts: dict) -> tuple[str, list, list]:
+def _do_rag(query: str, num_results: int, gen_opts: dict) -> tuple[list, list, dict]:
     hits = vector_search(query, num_results)
     citations = []
     context_parts = []
@@ -200,11 +200,15 @@ def _do_rag(query: str, num_results: int, gen_opts: dict) -> tuple[str, list, li
             "retrievedReferences": [{
                 "content": {"text": h["text"]},
                 "location": {"s3Location": {"uri": f"local://{h['file']}"}},
+                "score": score,
             }],
         })
     context = "\n\n".join(context_parts)
     tmpl = gen_opts["prompt_template"] or RAG_SYSTEM_PROMPT_TEMPLATE
-    system_prompt = tmpl.format(context=context) if "{context}" in tmpl else f"{tmpl}\n\nContext:\n{context}"
+    try:
+        system_prompt = tmpl.format(context=context) if "{context}" in tmpl else f"{tmpl}\n\nContext:\n{context}"
+    except (KeyError, ValueError):
+        system_prompt = f"{tmpl}\n\nContext:\n{context}"
     messages = [
         {"role": "system", "content": system_prompt},
         {"role": "user", "content": query},

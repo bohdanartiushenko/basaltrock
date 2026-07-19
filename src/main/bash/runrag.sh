@@ -30,7 +30,7 @@ cat <<EOF
 
 Ready!
   Web UI: http://localhost:80
-  API: http://localhost:80/basaltrock/search/kb
+  API: http://localhost:80/retrieveAndGenerate
   OpenSearch: http://localhost:9200
 
 Use 'make logs' to follow logs, 'make down' to stop.
