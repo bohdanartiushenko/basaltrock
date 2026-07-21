@@ -51,10 +51,10 @@ redeploy-api:
 	cd $(DOCKER_DIR) && docker compose up -d --build api
 
 example-chat:
-	cd examples && ../gradlew runChat
+	cd examples && ./gradlew runChat
 
 example-kb:
-	cd examples && ../gradlew runKb
+	cd examples && ./gradlew runKb
 
 logs: check-docker
 	cd $(DOCKER_DIR) && docker compose logs -f
