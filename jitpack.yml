@@ -1,0 +1,6 @@
+jdk:
+  - openjdk21
+before_install:
+  - sdk install gradle 9.5.1
+install:
+  - gradle clean publishToMavenLocal -x test
