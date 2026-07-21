@@ -11,7 +11,7 @@ MODEL_RUNNER_BASE_URL ?=
 MODEL_RUNNER_LLM_CHAT ?= ai/gemma3:1B-Q4_K_M
 MODEL_RUNNER_LLM_EMBEDDING ?= ai/nomic-embed-text-v2-moe
 
-.PHONY: all build compile test docker-test clean check-docker docker-build up down restart ingest redeploy-api example-chat example-kb license logs status help
+.PHONY: all build compile test docker-test clean check-docker docker-build up down restart ingest redeploy-api example-chat example-kb license logs status help version
 
 all: build
 
@@ -62,6 +62,9 @@ logs: check-docker
 status: check-docker
 	cd $(DOCKER_DIR) && docker compose ps
 
+version:
+	@grep "^version" build.gradle | sed "s/version = '\(.*\)'/\1/"
+
 help:
 	@echo "make build          - Compile, test, and build Docker"
 	@echo "make compile        - Gradle clean build (no tests)"
@@ -78,6 +81,7 @@ help:
 	@echo "make clean          - Stop containers + gradle clean"
 	@echo "make example-chat   - Run chat example"
 	@echo "make example-kb     - Run knowledge base example"
+	@echo "make version        - Print current version"
 
 license:
 	@echo "This project is licensed under the MIT License."
