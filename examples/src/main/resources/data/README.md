@@ -1,5 +1,15 @@
 # Basaltrock
 
+[![Java 21+](https://img.shields.io/badge/Java-21%2B-blue)](https://openjdk.org/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![Docker 4.40+](https://img.shields.io/badge/Docker-4.40%2B%20(Model%20Runner)-blue?logo=docker)](https://www.docker.com/)
+[![JitPack](https://jitpack.io/v/bohdanartiushenko/basaltrock.svg)](https://jitpack.io/#bohdanartiushenko/basaltrock)
+[![Gradle 9.5](https://img.shields.io/badge/Gradle-9.5-blue?logo=gradle)](https://gradle.org/)
+[![Python 3.13](https://img.shields.io/badge/Python-3.13-blue?logo=python)](https://www.python.org/)
+[![Testcontainers](https://img.shields.io/badge/Testcontainers-2.0.5-blue?logo=docker)](https://testcontainers.com/)
+[![Bash](https://img.shields.io/badge/Bash-scripts-orange?logo=gnubash)](src/main/bash/)
+[![Make](https://img.shields.io/badge/Make-build%20tool-orange?logo=gnu)](Makefile)
+
 A local, Docker-based test container for knowledge based chat systems that mimics the AWS Bedrock API.
 
 ![Basaltrock Architecture](docs/basaltrock.png)
@@ -8,7 +18,6 @@ A local, Docker-based test container for knowledge based chat systems that mimic
 
 - Testcontainers Integration (JUnit 5)
 - AWS Bedrock SDK Compatibility
-- Simple REST API for curl-based testing
 - OpenSearch k-NN vector search backend
 
 ## Quick Start
@@ -19,11 +28,13 @@ make up DATA_FOLDER=/path/to/data       # start RAG service
 make help                               # see all commands
 ```
 
-Then open **http://localhost:80**. You may input que
+Then open **http://localhost:80**.
 
 ![Screenshot](docs/screenshot_1_rag.png)
 
-## Testcontainer-like Usage Example
+## Testcontainer Usage
+
+See [TESTCONTAINERS.md](TESTCONTAINERS.md) for details.
 
 ```java
 @Testcontainers
@@ -54,7 +65,7 @@ public class MyTest {
 - Make
 - Java 21+
 
-### Minimum Hardware
+### Minimum Hardware Requirements
 
 | Component | RAM | GPU VRAM | Disk | CPU core @ 4.5 GHz (peak, during single query, % of 1 core) | GPU core @ 1.6 GHz (peak, during single query, % of device) |
 |-----------|-----|----------|------|-------------------------------------------------------------|-------------------------------------------------------------|
@@ -63,7 +74,6 @@ public class MyTest {
 | `ai/nomic-embed-text-v2-moe` (embedding) | 29 MB | 907 MB | 913 MB | <1% | ~60% |
 | API service | 105 MB | — | ~200 MB | <1% | — |
 | Ingestion service | ~256 MB | — | ~200 MB | — | — |
-| Source text documents | up to 100 MB | — | up to 100 MB | — | — |
 | **Total** | **~1.8 GB** | **~1.7 GB** | **~3.2 GB** | | |
 
 Single query (200 tokens response): ~5 seconds end-to-end with GPU offload.
@@ -75,10 +85,15 @@ Single query (200 tokens response): ~5 seconds end-to-end with GPU offload.
 - **[TESTCONTAINERS.md](TESTCONTAINERS.md)** - Testcontainers documentation
 - **[DOCKER_SETUP.md](DOCKER_SETUP.md)** - Docker setup and configuration
 - **[examples/](examples/)** - Standalone examples
+- **[BEDROCK_API_COMPATIBILITY.md](BEDROCK_API_COMPATIBILITY.md)** - Supported AWS Bedrock API operations
+
+## Talks & Demos
+
+- [How to run LLM + KB locally](https://youtu.be/Ds_qU_8cmQs) (Ukrainian)
 
 ## License
 
 See [LICENSE](LICENSE).
 
 ## Copyright
-Copyright (c) 2025-2026 Bohdan Artiushenko.
+Copyright (c) 2025-2026 [Bohdan Artiushenko](https://www.linkedin.com/in/bohdan-artiushenko-228a364/).
