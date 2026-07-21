@@ -50,3 +50,13 @@ The container stays running after completion — run multiple examples without r
 
 - Java 21+
 - Docker (with Model Runner support)
+
+## License
+
+See [LICENSE](../LICENSE).
+
+
+
+
+## Copyright
+Copyright (c) 2025-2026 Bohdan Artiushenko.
