@@ -1,4 +1,5 @@
 # Docker Setup
+[![Docker 4.40+](https://img.shields.io/badge/Docker-4.40%2B%20(Model%20Runner)-blue?logo=docker)](https://www.docker.com/)
 
 ## Architecture
 
