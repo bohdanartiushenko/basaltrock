@@ -1,4 +1,4 @@
-# Basaltrock
+# <img src="docs/icon.svg" width="32" alt="Basaltrock"/> Basaltrock
 
 [![Java 21+](https://img.shields.io/badge/Java-21%2B-blue)](https://openjdk.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
@@ -81,11 +81,11 @@ Single query (200 tokens response): ~5 seconds end-to-end with GPU offload.
 
 ## Documentation
 
-- **[GETTING_STARTED.md](GETTING_STARTED.md)** - Quick start guide
-- **[TESTCONTAINERS.md](TESTCONTAINERS.md)** - Testcontainers documentation
-- **[DOCKER_SETUP.md](DOCKER_SETUP.md)** - Docker setup and configuration
+- **[GETTING_STARTED.md](docs/GETTING_STARTED.md)** - Quick start guide
+- **[TESTCONTAINERS.md](docs/TESTCONTAINERS.md)** - Testcontainers documentation
+- **[DOCKER_SETUP.md](docs/DOCKER_SETUP.md)** - Docker setup and configuration
 - **[examples/](examples/)** - Standalone examples
-- **[BEDROCK_API_COMPATIBILITY.md](BEDROCK_API_COMPATIBILITY.md)** - Supported AWS Bedrock API operations
+- **[BEDROCK_API_COMPATIBILITY.md](docs/BEDROCK_API_COMPATIBILITY.md)** - Supported AWS Bedrock API operations
 
 ## Talks & Demos
 
