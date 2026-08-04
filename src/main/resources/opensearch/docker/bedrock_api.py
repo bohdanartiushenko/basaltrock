@@ -211,7 +211,7 @@ def _do_rag(query: str, num_results: int, gen_opts: dict) -> tuple[list, list, d
         system_prompt = f"{tmpl}\n\nContext:\n{context}"
     messages = [
         {"role": "system", "content": system_prompt},
-        {"role": "user", "content": query},
+        {"role": "user", "content": f"{query}\n\nIMPORTANT: Answer in the same language as this question."},
     ]
     return messages, citations, gen_opts
 
