@@ -9,7 +9,8 @@ from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import StreamingResponse
 from typing import AsyncIterator
 
-from shared import client, vector_search, CHAT_MODEL, EXPECTED_KB_ID, MAX_SIMS, TEMPERATURE, MAX_TOKENS
+from shared import (client, vector_search, CHAT_MODEL, EXPECTED_KB_ID, MAX_SIMS,
+                     TEMPERATURE, MAX_TOKENS, RAG_SYSTEM_PROMPT_TEMPLATE, MIN_SCORE_FOR_ANSWER)
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -80,6 +81,52 @@ async def invoke_stream(model_id: str, request: Request):
             logger.exception("LLM streaming failed (model=%s)", CHAT_MODEL)
 
     return StreamingResponse(event_stream(), media_type="application/vnd.amazon.eventstream")
+
+
+@router.post("/retrieveAndGenerate")
+async def retrieve_and_generate(request: Request):
+    body = await request.json()
+    kb_config = body.get("retrieveAndGenerateConfiguration", {}).get("knowledgeBaseConfiguration", {})
+    knowledge_base_id = kb_config.get("knowledgeBaseId", "")
+    if knowledge_base_id != EXPECTED_KB_ID:
+        raise HTTPException(status_code=404, detail=f"Knowledge base '{knowledge_base_id}' not found.")
+    query = body.get("input", {}).get("text", "")
+    if not query:
+        raise HTTPException(status_code=400, detail="Missing required field: input.text")
+    num_results = (
+        kb_config.get("retrievalConfiguration", {})
+        .get("vectorSearchConfiguration", {})
+        .get("numberOfResults", MAX_SIMS)
+    )
+
+    hits = vector_search(query, num_results)
+    citations = []
+    context_parts = []
+    for score, h in hits:
+        if score < MIN_SCORE_FOR_ANSWER:
+            continue
+        context_parts.append(h["text"])
+        citations.append({
+            "generatedResponsePart": {"textResponsePart": {"text": h["text"][:200]}},
+            "retrievedReferences": [{
+                "content": {"text": h["text"]},
+                "location": {"s3Location": {"uri": f"local://{h['file']}"}},
+            }],
+        })
+
+    context = "\n\n".join(context_parts)
+    system_prompt = RAG_SYSTEM_PROMPT_TEMPLATE.format(context=context)
+    messages = [
+        {"role": "system", "content": system_prompt},
+        {"role": "user", "content": query},
+    ]
+
+    response = client.chat.completions.create(
+        model=CHAT_MODEL, messages=messages, temperature=TEMPERATURE, max_tokens=MAX_TOKENS
+    )
+    output_text = response.choices[0].message.content or ""
+
+    return {"output": {"text": output_text}, "citations": citations}
 
 
 @router.post("/knowledgebases/{knowledge_base_id}/retrieve")
