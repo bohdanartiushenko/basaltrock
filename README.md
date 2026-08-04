@@ -2,8 +2,13 @@
 
 [![Java 21+](https://img.shields.io/badge/Java-21%2B-blue)](https://openjdk.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-[![Docker](https://img.shields.io/badge/Docker-required-blue?logo=docker)](https://www.docker.com/)
+[![Docker 4.40+](https://img.shields.io/badge/Docker-4.40%2B%20(Model%20Runner)-blue?logo=docker)](https://www.docker.com/)
 [![JitPack](https://jitpack.io/v/bohdanartiushenko/basaltrock.svg)](https://jitpack.io/#bohdanartiushenko/basaltrock)
+[![Gradle 9.5](https://img.shields.io/badge/Gradle-9.5-blue?logo=gradle)](https://gradle.org/)
+[![Python 3.13](https://img.shields.io/badge/Python-3.13-blue?logo=python)](https://www.python.org/)
+[![Testcontainers](https://img.shields.io/badge/Testcontainers-2.0.5-blue?logo=docker)](https://testcontainers.com/)
+[![Bash](https://img.shields.io/badge/Bash-scripts-orange?logo=gnubash)](src/main/bash/)
+[![Make](https://img.shields.io/badge/Make-build%20tool-orange?logo=gnu)](Makefile)
 
 A local, Docker-based test container for knowledge based chat systems that mimics the AWS Bedrock API.
 

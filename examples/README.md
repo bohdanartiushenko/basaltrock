@@ -1,5 +1,10 @@
 # Basaltrock Examples
 
+[![Java 21+](https://img.shields.io/badge/Java-21%2B-blue)](https://openjdk.org/)
+[![Gradle 9.5](https://img.shields.io/badge/Gradle-9.5-blue?logo=gradle)](https://gradle.org/)
+[![Docker 4.40+](https://img.shields.io/badge/Docker-4.40%2B%20(Model%20Runner)-blue?logo=docker)](https://www.docker.com/)
+[![JitPack](https://jitpack.io/v/bohdanartiushenko/basaltrock.svg)](https://jitpack.io/#bohdanartiushenko/basaltrock)
+
 Standalone project showing how to use Basaltrock as a dependency.
 
 ## Dependency
