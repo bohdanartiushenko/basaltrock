@@ -1,0 +1,36 @@
+@startuml
+
+
+actor "AWS SDK Bedrock Client" as awsuser
+actor "REST Client" as curluser
+
+
+package localhost {
+folder "data/" as datafiles
+package "Docker" {
+
+    database "OpenSearch\nIndex" as opensearch
+
+  rectangle "Scanner Service" as ingestion #LightGreen
+  rectangle "API Service" as api #LightBlue
+
+package "Model Runner" #LightPink {
+  component "Chat Model" as chatmodel
+  component "Embedding Model" as embedmodel
+
+}
+  ingestion <-- datafiles : read
+  ingestion --> opensearch : upload embeddings
+  api --> opensearch : search
+}
+
+
+
+awsuser --> api
+curluser --> api
+
+ingestion --> embedmodel : create embeddings
+api --> embedmodel : query embedding
+api --> chatmodel : generate response
+}
+@enduml

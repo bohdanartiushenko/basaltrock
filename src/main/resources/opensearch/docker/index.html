@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <title>Basaltrock RAG</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 800px;
+            width: 100%;
+            padding: 40px;
+        }
+
+        h1 {
+            font-size: 28px;
+            margin-bottom: 8px;
+            color: #1a202c;
+        }
+
+        .subtitle {
+            color: #718096;
+            margin-bottom: 32px;
+            font-size: 14px;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #2d3748;
+            font-size: 14px;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        textarea {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.2s;
+            font-family: inherit;
+        }
+
+        input[type="text"]:focus,
+        input[type="number"]:focus,
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        input[type="number"] {
+            width: 120px;
+        }
+
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 14px 32px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            width: 100%;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .results {
+            margin-top: 32px;
+            display: none;
+        }
+
+        .results.visible {
+            display: block;
+        }
+
+        .answer {
+            background: #f7fafc;
+            border-left: 4px solid #667eea;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 24px;
+        }
+
+        .answer h3 {
+            font-size: 16px;
+            margin-bottom: 12px;
+            color: #2d3748;
+        }
+
+        .answer-text {
+            color: #1a202c;
+            line-height: 1.6;
+            font-size: 15px;
+            white-space: pre-wrap;
+        }
+
+        .sources {
+            background: #fff;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 20px;
+        }
+
+        .sources h3 {
+            font-size: 16px;
+            margin-bottom: 16px;
+            color: #2d3748;
+        }
+
+        .source-item {
+            background: #f7fafc;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 12px;
+            border-left: 3px solid #cbd5e0;
+        }
+
+        .source-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .source-meta {
+            font-size: 12px;
+            color: #718096;
+            margin-bottom: 8px;
+        }
+
+        .source-text {
+            font-size: 14px;
+            color: #2d3748;
+            line-height: 1.5;
+        }
+
+        .error {
+            background: #fff5f5;
+            border-left: 4px solid #fc8181;
+            padding: 16px;
+            border-radius: 8px;
+            color: #c53030;
+            margin-top: 20px;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid #ffffff;
+            border-radius: 50%;
+            border-top-color: transparent;
+            animation: spin 0.6s linear infinite;
+            margin-right: 8px;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>Basaltrock RAG</h1>
+    <p class="subtitle">Ask questions about your knowledge base</p>
+
+    <form id="searchForm">
+        <div class="input-group">
+            <label for="question">Question</label>
+            <input
+                    autofocus
+                    id="question"
+                    name="question"
+                    placeholder="What would you like to know?"
+                    required
+                    type="text"
+            >
+        </div>
+
+        <div class="input-group">
+            <label for="limit">Number of sources (1-30)</label>
+            <input
+                    id="limit"
+                    max="30"
+                    min="1"
+                    name="limit"
+                    type="number"
+                    value="5"
+            >
+        </div>
+
+        <div class="input-group">
+            <label for="temperature">Temperature</label>
+            <input
+                    id="temperature"
+                    min="0.0"
+                    name="temperature"
+                    step="0.1"
+                    type="number"
+                    value="{{ temperature }}"
+            >
+        </div>
+
+        <div class="input-group">
+            <label for="maxtokens">Max tokens (1000, 1000000)</label>
+            <input
+                    id="maxtokens"
+                    max="1000000"
+                    min="1000"
+                    name="maxtokens"
+                    type="number"
+                    value="{{ max_tokens }}"
+            >
+        </div>
+
+        <div class="input-group">
+            <label for="systemPrompt">System Prompt, use {context} for RAG context</label>
+            <textarea
+                    id="systemPrompt"
+                    name="systemPrompt"
+            >{{ system_prompt }}</textarea>
+        </div>
+
+        <button id="submitBtn" type="submit">
+            Search Knowledge Base
+        </button>
+    </form>
+
+    <div class="results" id="results">
+        <div class="answer">
+            <h3>Answer</h3>
+            <div class="answer-text" id="answer"></div>
+        </div>
+
+        <div class="sources">
+            <h3>Sources</h3>
+            <div id="sources"></div>
+        </div>
+    </div>
+
+    <div class="error" id="error" style="display: none;"></div>
+</div>
+
+<script>
+    const form = document.getElementById('searchForm');
+    const submitBtn = document.getElementById('submitBtn');
+    const resultsDiv = document.getElementById('results');
+    const answerDiv = document.getElementById('answer');
+    const sourcesDiv = document.getElementById('sources');
+    const errorDiv = document.getElementById('error');
+
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const question = document.getElementById('question').value;
+        const limit = document.getElementById('limit').value;
+        const temperature = document.getElementById('temperature').value;
+        const systemPrompt = document.getElementById('systemPrompt').value;
+        const maxtokens = document.getElementById('maxtokens').value;
+
+        resultsDiv.classList.remove('visible');
+        errorDiv.style.display = 'none';
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<span class="loading"></span>Searching...';
+
+        try {
+            const body = {
+                retrievalQuery: {text: question},
+                retrievalConfiguration: {
+                    vectorSearchConfiguration: {
+                        numberOfResults: parseInt(limit)
+                    }
+                },
+                temperature: parseFloat(temperature),
+                system: systemPrompt,
+                maxtokens: maxtokens
+            };
+
+            const response = await fetch('/basaltrock/search/kb', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(body)
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+
+            const data = await response.json();
+
+            answerDiv.textContent = data.answer || 'No answer generated';
+
+            sourcesDiv.innerHTML = '';
+            if (data.sources && data.sources.length > 0) {
+                data.sources.forEach((source, index) => {
+                    const sourceEl = document.createElement('div');
+                    sourceEl.className = 'source-item';
+                    sourceEl.innerHTML = `
+                            <div class="source-meta">
+                                <strong>${source.file}</strong> | Score: ${(source.score * 100).toFixed(1)}%
+                            </div>
+                            <div class="source-text">${escapeHtml(source.text)}</div>
+                        `;
+                    sourcesDiv.appendChild(sourceEl);
+                });
+            } else {
+                sourcesDiv.innerHTML = '<p style="color: #718096;">No sources found</p>';
+            }
+
+            resultsDiv.classList.add('visible');
+
+        } catch (error) {
+            errorDiv.textContent = `Error: ${error.message}`;
+            errorDiv.style.display = 'block';
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Search Knowledge Base';
+        }
+    });
+
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+</script>
+</body>
+</html>

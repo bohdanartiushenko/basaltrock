@@ -1,0 +1,85 @@
+name: basaltrock
+
+services:
+  opensearch:
+    image: opensearchproject/opensearch:2.11.0
+    environment:
+      - discovery.type=single-node
+      - plugins.security.disabled=true
+      - OPENSEARCH_JAVA_OPTS=-Xms512m -Xmx512m
+    ports:
+      - "9200:9200"
+    healthcheck:
+      test: [ "CMD-SHELL", "curl -f http://localhost:9200/_cluster/health || exit 1" ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  ingestion:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: ingestion
+    depends_on:
+      opensearch:
+        condition: service_healthy
+    environment:
+      MODEL_RUNNER_BASE_URL: ""
+      MODEL_RUNNER_LLM_EMBEDDING: ""
+      DATA_DIR: /app/data
+      OPENSEARCH_URL: http://opensearch:9200
+    volumes:
+      - rag_cache:/app/cache
+      - ${DATA_FOLDER_PATH:-./data}:/app/data:ro
+    models:
+      embedding-model:
+        endpoint_var: MODEL_RUNNER_BASE_URL
+        model_var: MODEL_RUNNER_LLM_EMBEDDING
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: api
+    ports:
+      - "80:8080"
+    healthcheck:
+      test: [ "CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8080/health').read()" ]
+      interval: 1000s
+      timeout: 20s
+      retries: 6
+      start_period: 1s
+    depends_on:
+      ingestion:
+        condition: service_completed_successfully
+    environment:
+      MODEL_RUNNER_BASE_URL: ""
+      MODEL_RUNNER_LLM_CHAT: ""
+      MODEL_RUNNER_LLM_EMBEDDING: ""
+      OPENSEARCH_URL: http://opensearch:9200
+      MIN_SCORE: "0"
+      MAX_SIMILARITIES: "30"
+      TEMPERATURE: "3"
+      MAX_TOKENS: "4096"
+      MIN_SCORE_FOR_ANSWER: "0.3"
+      RAG_SYSTEM_PROMPT_TEMPLATE: "Answer the question in the same language as the question. Answer based on the context below from the knowledge base. If the context contains relevant information, use it to answer. If not, say you don't have enough information.\n\nContext:\n{context}"
+
+    volumes:
+      - rag_cache:/app/cache
+    models:
+      chat-model:
+        endpoint_var: MODEL_RUNNER_BASE_URL
+        model_var: MODEL_RUNNER_LLM_CHAT
+      embedding-model:
+        endpoint_var: MODEL_RUNNER_BASE_URL
+        model_var: MODEL_RUNNER_LLM_EMBEDDING
+
+volumes:
+  rag_cache:
+
+models:
+  chat-model:
+    model: ai/gemma3:1B-Q4_K_M
+
+  embedding-model:
+    model: ai/nomic-embed-text-v2-moe

@@ -1,0 +1,50 @@
+@startuml
+
+title <size:20>Basaltrock — Docker Compose Setup</size>
+
+actor "AWS SDK Client" as awsuser
+actor "REST Client" as curluser
+
+
+package localhost {
+folder "data/" as datafiles
+package "Docker Compose" {
+
+  rectangle "OpenSearch Container" as opensearch #Orange {
+    database "k-NN Index"
+  }
+
+  rectangle "Scanner Container" as ingestion #LightGreen {
+    component "ingestion.py"
+  }
+
+  rectangle "API Container" as api #LightBlue {
+    component "api.py"
+    component "bedrock_api.py"
+    component "basaltrock_api.py"
+    component "shared.py"
+  }
+
+package "Model Runner" #LightPink {
+  rectangle "llama.cpp" as modelrunner
+  component "Chat Model\nai/gemma3:1B-Q4_K_M" as chatmodel
+  component "Embedding Model\nai/nomic-embed-text-v2-moe" as embedmodel
+
+  modelrunner --> chatmodel
+  modelrunner --> embedmodel
+}
+  ingestion <-- datafiles : read
+  ingestion --> opensearch : upload embeddings
+  api --> opensearch : k-NN search
+}
+
+
+
+awsuser --> api
+curluser --> api
+
+ingestion --> embedmodel : create embeddings
+api --> embedmodel : query embedding
+api --> chatmodel : generate response
+}
+@enduml
