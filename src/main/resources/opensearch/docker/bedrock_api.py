@@ -212,6 +212,40 @@ async def invoke_model(model_id: str, request: Request):
     }
 
 
+@router.post("/model/{model_id:path}/invoke-with-bidirectional-stream")
+async def invoke_bidirectional_stream(model_id: str, request: Request):
+    oai_messages, max_tokens, temperature = _build_oai_messages(await request.json())
+
+    async def event_stream() -> AsyncIterator[bytes]:
+        try:
+            for chunk in client.chat.completions.create(
+                    model=CHAT_MODEL,
+                    messages=oai_messages,
+                    temperature=temperature,
+                    max_tokens=max_tokens,
+                    stream=True,
+            ):
+                if not chunk.choices:
+                    continue
+                text = chunk.choices[0].delta.content or ""
+                if text:
+                    inner = json.dumps(
+                        {
+                            "type": "content_block_delta",
+                            "index": 0,
+                            "delta": {"type": "text_delta", "text": text},
+                        }
+                    ).encode()
+                    payload = json.dumps(
+                        {"bytes": base64.b64encode(inner).decode()}
+                    ).encode()
+                    yield _encode_event(payload)
+        except Exception:
+            logger.exception("LLM bidirectional streaming failed (model=%s)", CHAT_MODEL)
+
+    return StreamingResponse(event_stream(), media_type="application/vnd.amazon.eventstream")
+
+
 @router.post("/model/{model_id:path}/invoke-with-response-stream")
 async def invoke_stream(model_id: str, request: Request):
     oai_messages, max_tokens, temperature = _build_oai_messages(await request.json())
