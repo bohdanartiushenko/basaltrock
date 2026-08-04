@@ -10,6 +10,8 @@ import software.amazon.awssdk.services.bedrockruntime.model.ConverseRequest;
 import software.amazon.awssdk.services.bedrockruntime.model.InferenceConfiguration;
 import software.amazon.awssdk.services.bedrockruntime.model.Message;
 
+import software.amazon.awssdk.services.bedrockruntime.model.SystemContentBlock;
+
 import java.util.List;
 
 import static com.basaltrock.testcontainers.AwsBedrockUtils.createBedrockRuntimeClient;
@@ -40,6 +42,30 @@ public class DeterminismTest extends BaseBasaltrockTest {
 
             logger.info("Response 1: '{}', Response 2: '{}'", response1, response2);
             assertThat(response1).isEqualTo(response2);
+        }
+    }
+
+    @Test
+    void testZeroTemperatureProducesExpectedAnswer() {
+        try (var bedrockClient = createBedrockRuntimeClient(container)) {
+            var request = ConverseRequest.builder()
+                    .modelId(container.getModelId())
+                    .system(List.of(SystemContentBlock.builder()
+                            .text("You are a calculator. Reply with ONLY the numeric result, nothing else.")
+                            .build()))
+                    .messages(List.of(Message.builder()
+                            .role(ConversationRole.USER)
+                            .content(List.of(ContentBlock.fromText("2+2")))
+                            .build()))
+                    .inferenceConfig(InferenceConfiguration.builder()
+                            .temperature(0.0f)
+                            .maxTokens(5)
+                            .build())
+                    .build();
+
+            var response = bedrockClient.converse(request).output().message().content().get(0).text().trim();
+            logger.info("Calculator response: '{}'", response);
+            assertThat(response).isEqualTo("4");
         }
     }
 }
