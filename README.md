@@ -74,6 +74,7 @@ Single query (200 tokens response): ~5 seconds end-to-end with GPU offload.
 - **[TESTCONTAINERS.md](TESTCONTAINERS.md)** - Testcontainers documentation
 - **[DOCKER_SETUP.md](DOCKER_SETUP.md)** - Docker setup and configuration
 - **[examples/](examples/)** - Standalone examples
+- **[BEDROCK_API_COMPATIBILITY.md](BEDROCK_API_COMPATIBILITY.md)** - Supported AWS Bedrock API operations
 
 ## License
 
