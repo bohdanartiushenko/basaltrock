@@ -267,7 +267,7 @@
         </div>
 
         <button id="submitBtn" type="submit">
-            Search Knowledge Base
+            Ask
         </button>
     </form>
 
@@ -306,7 +306,7 @@
         resultsDiv.classList.remove('visible');
         errorDiv.style.display = 'none';
         submitBtn.disabled = true;
-        submitBtn.innerHTML = '<span class="loading"></span>Searching...';
+        submitBtn.innerHTML = '<span class="loading"></span>Thinking...';
 
         try {
             const body = {
@@ -359,7 +359,7 @@
             errorDiv.style.display = 'block';
         } finally {
             submitBtn.disabled = false;
-            submitBtn.textContent = 'Search Knowledge Base';
+            submitBtn.textContent = 'Ask';
         }
     });
 

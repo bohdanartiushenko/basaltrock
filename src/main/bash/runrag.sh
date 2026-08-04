@@ -15,15 +15,23 @@ Starting Basaltrock RAG service...
   Model runner: $MODEL_RUNNER_BASE_URL
   Chat model: $MODEL_RUNNER_LLM_CHAT
   Embedding model: $MODEL_RUNNER_LLM_EMBEDDING
-
-Starting docker compose...
-  Web UI: http://localhost:80
-  API: http://localhost:80/basaltrock/search/kb
-  OpenSearch: http://localhost:9200
-
-Press Ctrl+C to stop
 EOF
 
 cd "$DOCKER_DIR"
 export MODEL_RUNNER_BASE_URL MODEL_RUNNER_LLM_CHAT MODEL_RUNNER_LLM_EMBEDDING DATA_FOLDER_PATH
-docker compose up --build
+docker compose up -d --build
+
+echo "Waiting for API to be ready..."
+until curl -sf http://localhost:80/health >/dev/null 2>&1; do
+  sleep 2
+done
+
+cat <<EOF
+
+Ready!
+  Web UI: http://localhost:80
+  API: http://localhost:80/basaltrock/search/kb
+  OpenSearch: http://localhost:9200
+
+Use 'make logs' to follow logs, 'make down' to stop.
+EOF

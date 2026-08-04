@@ -1,4 +1,4 @@
-do@startuml
+@startuml
 
 !include https://raw.githubusercontent.com/awslabs/aws-icons-for-plantuml/1540f226ffdd2ea0e188173c51b2c0392340dace/dist/AWSCommon.puml
 !include https://raw.githubusercontent.com/awslabs/aws-icons-for-plantuml/1540f226ffdd2ea0e188173c51b2c0392340dace/dist/Database/AuroraMariaDBInstance.puml
@@ -31,16 +31,16 @@ package basaltrock {
     rectangle "shared.py\nVector Store" as shared
   }
 
-    package "Scanner Service" #LightGreen {
+    package "Ingestion Service" #LightGreen {
       rectangle "ingestion.py" as ingestion
       folder "data/" as datafiles
     }
 
-  database "embeddings.pkl\ncache" as cache
+  database "OpenSearch\nIndex" as osindex
 
   ingestion --> datafiles : read
-  ingestion --> cache : write embeddings
-  shared --> cache : load embeddings
+  ingestion --> osindex : write embeddings
+  shared --> osindex : vector search
 }
 
 package "Model Runner" #LightPink {
