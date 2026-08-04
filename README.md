@@ -91,4 +91,4 @@ Single query (200 tokens response): ~5 seconds end-to-end with GPU offload.
 See [LICENSE](LICENSE).
 
 ## Copyright
-Copyright (c) 2025-2026 Bohdan Artiushenko.
+Copyright (c) 2025-2026 [Bohdan Artiushenko](https://www.linkedin.com/in/bohdan-artiushenko-228a364/).
