@@ -5,7 +5,10 @@ import json
 import logging
 import os
 import struct
+import threading
+import uuid
 import zlib
+from datetime import datetime, timezone
 from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import StreamingResponse
 from typing import AsyncIterator
@@ -445,3 +448,247 @@ async def retrieve(knowledge_base_id: str, request: Request):
             for s, h in hits
         ]
     }
+
+
+_async_invocations: dict = {}
+_async_lock = threading.Lock()
+
+
+def _run_async_invoke(invocation_arn: str, model_input: dict):
+    try:
+        oai_messages, max_tokens, temperature = _build_oai_messages(model_input)
+        response = client.chat.completions.create(
+            model=CHAT_MODEL, messages=oai_messages, temperature=temperature, max_tokens=max_tokens,
+        )
+        text = response.choices[0].message.content or "" if response.choices else ""
+        output = {
+            "type": "message",
+            "role": "assistant",
+            "content": [{"type": "text", "text": text}],
+            "stop_reason": "end_turn",
+        }
+        with _async_lock:
+            _async_invocations[invocation_arn]["status"] = "Completed"
+            _async_invocations[invocation_arn]["endTime"] = datetime.now(timezone.utc).isoformat()
+            _async_invocations[invocation_arn]["output"] = output
+    except Exception as e:
+        with _async_lock:
+            _async_invocations[invocation_arn]["status"] = "Failed"
+            _async_invocations[invocation_arn]["failureMessage"] = str(e)
+            _async_invocations[invocation_arn]["endTime"] = datetime.now(timezone.utc).isoformat()
+
+
+@router.post("/async-invoke")
+async def start_async_invoke(request: Request):
+    body = await request.json()
+    model_id = body.get("modelId", "")
+    model_input = body.get("modelInput", {})
+    output_config = body.get("outputDataConfig", {})
+
+    invocation_arn = f"arn:aws:bedrock:us-east-1:000000000000:async-invoke/{uuid.uuid4()}"
+    now = datetime.now(timezone.utc).isoformat()
+
+    with _async_lock:
+        _async_invocations[invocation_arn] = {
+            "invocationArn": invocation_arn,
+            "modelArn": model_id,
+            "status": "InProgress",
+            "submitTime": now,
+            "lastModifiedTime": now,
+            "outputDataConfig": output_config,
+        }
+
+    thread = threading.Thread(target=_run_async_invoke, args=(invocation_arn, model_input), daemon=True)
+    thread.start()
+
+    return {"invocationArn": invocation_arn}
+
+
+@router.get("/async-invoke")
+async def list_async_invokes(request: Request):
+    params = request.query_params
+    status_filter = params.get("statusEquals")
+    max_results = int(params.get("maxResults", "20"))
+    with _async_lock:
+        items = list(_async_invocations.values())
+    if status_filter:
+        items = [i for i in items if i.get("status") == status_filter]
+    items = items[:max_results]
+    summaries = []
+    for i in items:
+        summaries.append({
+            "invocationArn": i["invocationArn"],
+            "modelArn": i.get("modelArn", ""),
+            "status": i["status"],
+            "submitTime": i.get("submitTime", ""),
+            "lastModifiedTime": i.get("lastModifiedTime", i.get("submitTime", "")),
+            "outputDataConfig": i.get("outputDataConfig", {}),
+        })
+    return {"asyncInvokeSummaries": summaries}
+
+
+@router.get("/async-invoke/{invocation_arn:path}")
+async def get_async_invoke(invocation_arn: str):
+    with _async_lock:
+        invocation = _async_invocations.get(invocation_arn)
+    if not invocation:
+        raise HTTPException(status_code=404, detail=f"Invocation '{invocation_arn}' not found")
+    return invocation
+
+
+_sessions: dict = {}
+_sessions_lock = threading.Lock()
+
+
+@router.put("/sessions")
+async def create_session(request: Request):
+    body = await request.json()
+    session_id = str(uuid.uuid4())
+    now = datetime.now(timezone.utc).isoformat()
+    session = {
+        "sessionId": session_id,
+        "sessionArn": f"arn:aws:bedrock:us-east-1:000000000000:session/{session_id}",
+        "sessionStatus": "ACTIVE",
+        "createdAt": now,
+        "lastUpdatedAt": now,
+        "encryptionKeyArn": body.get("encryptionKeyArn", ""),
+        "sessionMetadata": body.get("sessionMetadata", {}),
+    }
+    with _sessions_lock:
+        _sessions[session_id] = session
+    return session
+
+
+@router.get("/sessions/{session_id}")
+async def get_session(session_id: str):
+    with _sessions_lock:
+        session = _sessions.get(session_id)
+    if not session:
+        raise HTTPException(status_code=404, detail=f"Session '{session_id}' not found")
+    return session
+
+
+@router.delete("/sessions/{session_id}")
+async def delete_session(session_id: str):
+    with _sessions_lock:
+        session = _sessions.pop(session_id, None)
+    if not session:
+        raise HTTPException(status_code=404, detail=f"Session '{session_id}' not found")
+    return {"sessionId": session_id}
+
+
+@router.post("/generateQuery")
+async def generate_query(request: Request):
+    body = await request.json()
+    transform_type = body.get("transformationType", "SQL")
+    query_generation_input = body.get("queryGenerationInput", {})
+    natural_language = query_generation_input.get("text", "")
+    if not natural_language:
+        raise HTTPException(status_code=400, detail="Missing queryGenerationInput.text")
+
+    response = client.chat.completions.create(
+        model=CHAT_MODEL,
+        messages=[
+            {"role": "system", "content": f"Convert the following natural language request into a {transform_type} query. Return only the query, nothing else."},
+            {"role": "user", "content": natural_language},
+        ],
+        temperature=0.0,
+        max_tokens=MAX_TOKENS,
+    )
+    generated = response.choices[0].message.content or ""
+    return {
+        "queries": [{"type": transform_type, "text": generated}],
+    }
+
+
+@router.post("/agents/{agent_id}/agentAliases/{agent_alias_id}/sessions/{session_id}/text")
+async def invoke_agent(agent_id: str, agent_alias_id: str, session_id: str, request: Request):
+    body = await request.json()
+    input_text = body.get("inputText", "")
+
+    async def event_stream() -> AsyncIterator[bytes]:
+        try:
+            for chunk in client.chat.completions.create(
+                    model=CHAT_MODEL,
+                    messages=[{"role": "user", "content": input_text}],
+                    temperature=TEMPERATURE, max_tokens=MAX_TOKENS, stream=True,
+            ):
+                if not chunk.choices:
+                    continue
+                text = chunk.choices[0].delta.content or ""
+                if text:
+                    payload = json.dumps({"bytes": base64.b64encode(text.encode()).decode()}).encode()
+                    yield _encode_event(payload, "chunk")
+        except Exception:
+            logger.exception("InvokeAgent failed (agent=%s)", agent_id)
+
+    return StreamingResponse(event_stream(), media_type="application/vnd.amazon.eventstream",
+                             headers={"x-amzn-bedrock-agent-session-id": session_id,
+                                      "x-amz-bedrock-agent-content-type": "text/plain"})
+
+
+@router.post("/flows/{flow_id}/aliases/{flow_alias_id}")
+async def invoke_flow(flow_id: str, flow_alias_id: str, request: Request):
+    body = await request.json()
+    inputs = body.get("inputs", [])
+    input_text = ""
+    for inp in inputs:
+        content = inp.get("content", {})
+        doc = content.get("document")
+        if isinstance(doc, str):
+            input_text = doc
+            break
+        elif isinstance(doc, dict):
+            input_text = json.dumps(doc)
+            break
+
+    async def event_stream() -> AsyncIterator[bytes]:
+        try:
+            response = client.chat.completions.create(
+                model=CHAT_MODEL,
+                messages=[{"role": "user", "content": input_text}],
+                temperature=TEMPERATURE, max_tokens=MAX_TOKENS,
+            )
+            text = response.choices[0].message.content or "" if response.choices else ""
+            output_payload = json.dumps({
+                "nodeName": "FlowOutputNode",
+                "nodeType": "FlowOutputNode",
+                "content": {"document": text},
+            }).encode()
+            yield _encode_event(output_payload, "flowOutputEvent")
+            completion_payload = json.dumps({"completionReason": "SUCCESS"}).encode()
+            yield _encode_event(completion_payload, "flowCompletionEvent")
+        except Exception:
+            logger.exception("InvokeFlow failed (flow=%s)", flow_id)
+
+    return StreamingResponse(event_stream(), media_type="application/vnd.amazon.eventstream")
+
+
+@router.post("/agents/{session_id}")
+async def invoke_inline_agent(session_id: str, request: Request):
+    body = await request.json()
+    input_text = body.get("inputText", "")
+    instruction = body.get("instruction", "")
+    messages = []
+    if instruction:
+        messages.append({"role": "system", "content": instruction})
+    messages.append({"role": "user", "content": input_text})
+
+    async def event_stream() -> AsyncIterator[bytes]:
+        try:
+            for chunk in client.chat.completions.create(
+                    model=CHAT_MODEL, messages=messages,
+                    temperature=TEMPERATURE, max_tokens=MAX_TOKENS, stream=True,
+            ):
+                if not chunk.choices:
+                    continue
+                text = chunk.choices[0].delta.content or ""
+                if text:
+                    payload = json.dumps({"bytes": base64.b64encode(text.encode()).decode()}).encode()
+                    yield _encode_event(payload, "chunk")
+        except Exception:
+            logger.exception("InvokeInlineAgent failed (session=%s)", session_id)
+
+    return StreamingResponse(event_stream(), media_type="application/vnd.amazon.eventstream",
+                             headers={"x-amzn-bedrock-agent-session-id": session_id,
+                                      "x-amz-bedrock-agent-content-type": "text/plain"})

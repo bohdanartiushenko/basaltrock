@@ -49,4 +49,4 @@ bin/
 # macOS
 .DS_Store
 
-gradle
+gradle/out/
