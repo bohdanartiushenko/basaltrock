@@ -1,10 +1,4 @@
 #!/usr/bin/env python3
-"""
-AWS Bedrock API-compatible endpoints for testing applications built for AWS Bedrock.
-Implements:
-- POST /model/{model_id}/invoke-with-response-stream (chat streaming)
-- POST /knowledgebases/{knowledge_base_id}/retrieve (knowledge base retrieval)
-"""
 
 import base64
 import json
@@ -21,7 +15,6 @@ logger = logging.getLogger(__name__)
 router = APIRouter()
 
 
-# ── AWS Event Stream encoding ─────────────────────────────────────────────────
 def _encode_header(name: str, value: str) -> bytes:
     nb, vb = name.encode(), value.encode()
     return struct.pack("B", len(nb)) + nb + struct.pack("B", 7) + struct.pack(">H", len(vb)) + vb
@@ -55,7 +48,6 @@ def _build_oai_messages(body: dict) -> tuple[list[dict], int, float]:
     return oai_messages, max_tokens, temperature
 
 
-# ── Bedrock endpoints ─────────────────────────────────────────────────────────
 @router.post("/model/{model_id:path}/invoke-with-response-stream")
 async def invoke_stream(model_id: str, request: Request):
     oai_messages, max_tokens, temperature = _build_oai_messages(await request.json())

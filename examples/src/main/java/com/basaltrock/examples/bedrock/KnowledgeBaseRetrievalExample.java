@@ -14,24 +14,13 @@ import software.amazon.awssdk.services.bedrockagentruntime.model.RetrieveRequest
 
 import java.net.URI;
 
-/**
- * Example showing knowledge base retrieval with Basaltrock RAG API.
- *
- * <p>Prerequisites: Basaltrock container must be running at http://localhost:8080
- *
- * <p>Run:
- * <pre>
- * cd examples
- * ./gradlew run --args="kb What is copyright?"
- * </pre>
- */
 public class KnowledgeBaseRetrievalExample {
 
     static final Logger logger = LoggerFactory.getLogger(KnowledgeBaseRetrievalExample.class);
     static final String KNOWLEDGE_BASE_ID = "basaltrock-knowledge-base-id";
 
     public static void main(String[] args) throws Exception {
-        String query = args.length > 0 ? String.join(" ", args) : "Basaltrock";
+        var query = args.length > 0 ? String.join(" ", args) : "Basaltrock";
 
         ContainerManager.ensureContainerRunning("src/main/resources/data");
 
@@ -74,8 +63,6 @@ public class KnowledgeBaseRetrievalExample {
 
             if (response.retrievalResults().isEmpty()) {
                 logger.warn("No results found for query: '{}'", query);
-            } else {
-                logger.info("✓ Knowledge base retrieval completed");
             }
         }
     }

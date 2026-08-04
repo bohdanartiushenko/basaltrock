@@ -1,7 +1,4 @@
 #!/usr/bin/env python3
-"""
-Build or refresh the embedding index in OpenSearch from data/*.txt and *.html files.
-"""
 
 import csv
 import hashlib
@@ -91,6 +88,10 @@ def _load_chunks(folder: str) -> list[tuple[str, str]]:
 
 raw = _load_chunks(DATA_DIR)
 
+if not raw:
+    print(f"No files found in '{DATA_DIR}'. Nothing to ingest.")
+    exit(0)
+
 if not os_client.indices.exists(INDEX_NAME):
     print(f"Creating index '{INDEX_NAME}'…")
     os_client.indices.create(
@@ -114,11 +115,10 @@ if not os_client.indices.exists(INDEX_NAME):
 print(f"Ingesting {len(raw)} chunks into '{INDEX_NAME}'…")
 
 existing_docs = {}
-if os_client.indices.exists(INDEX_NAME):
-    result = os_client.search(index=INDEX_NAME, body={"query": {"match_all": {}}, "size": 10000})
-    for hit in result["hits"]["hits"]:
-        key = (hit["_source"]["file"], hit["_source"]["text"])
-        existing_docs[key] = hit["_id"]
+result = os_client.search(index=INDEX_NAME, body={"query": {"match_all": {}}, "size": 10000})
+for hit in result["hits"]["hits"]:
+    key = (hit["_source"]["file"], hit["_source"]["text"])
+    existing_docs[key] = hit["_id"]
 
 fnames, texts = zip(*raw)
 embeddings = _embed(list(texts))

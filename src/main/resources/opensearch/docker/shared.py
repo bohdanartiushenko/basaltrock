@@ -1,13 +1,9 @@
 #!/usr/bin/env python3
-"""
-Shared configuration, helpers, and data store for Basaltrock API services.
-"""
 
 import os
 from openai import OpenAI
 from opensearchpy import OpenSearch
 
-# ── Config ────────────────────────────────────────────────────────────────────
 BASE_URL = os.environ.get(
     "MODEL_RUNNER_BASE_URL",
     "http://model-runner.docker.internal/engines/llama.cpp/v1/",
@@ -30,11 +26,7 @@ RAG_SYSTEM_PROMPT_TEMPLATE = os.environ.get(
 client = OpenAI(base_url=BASE_URL, api_key="dummy")
 os_client = OpenSearch([OPENSEARCH_URL], use_ssl=False, verify_certs=False)
 
-# ── Vector store ──────────────────────────────────────────────────────────────
-store: list[dict] = []
 
-
-# ── Helpers ───────────────────────────────────────────────────────────────────
 def embed(text: str) -> list[float]:
     return client.embeddings.create(model=EMBED_MODEL, input=text).data[0].embedding
 
