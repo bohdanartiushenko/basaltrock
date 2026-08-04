@@ -11,7 +11,7 @@ MODEL_RUNNER_BASE_URL ?=
 MODEL_RUNNER_LLM_CHAT ?= ai/gemma3:1B-Q4_K_M
 MODEL_RUNNER_LLM_EMBEDDING ?= ai/nomic-embed-text-v2-moe
 
-.PHONY: all build compile test docker-test clean check-docker docker-build up down restart ingest redeploy-api example-chat example-kb license logs status help version
+.PHONY: all build compile test docker-test clean check-docker docker-build up down restart ingest redeploy-api prune example-chat example-kb license logs status help version
 
 all: build
 
@@ -50,6 +50,11 @@ ingest:
 redeploy-api:
 	cd $(DOCKER_DIR) && docker compose up -d --build api
 
+prune: down
+	docker images --filter "reference=*basaltrock*" -q | xargs -r docker rmi -f
+	docker volume ls --filter "name=basaltrock" -q | xargs -r docker volume rm
+	docker volume ls --filter "name=rag_cache" -q | xargs -r docker volume rm
+
 example-chat:
 	cd examples && ./gradlew runChat
 
@@ -81,6 +86,7 @@ help:
 	@echo "make clean          - Stop containers + gradle clean"
 	@echo "make example-chat   - Run chat example"
 	@echo "make example-kb     - Run knowledge base example"
+	@echo "make prune          - Remove basaltrock Docker images and volumes"
 	@echo "make version        - Print current version"
 
 license:
