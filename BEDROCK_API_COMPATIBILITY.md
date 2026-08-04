@@ -11,7 +11,7 @@ Basaltrock server compatibility with AWS Bedrock SDK operations.
 | [Converse](https://docs.aws.amazon.com/bedrock/latest/APIReference/API_runtime_Converse.html) | `POST /model/{modelId}/converse` | ✅ Full          | Structured messages, usage stats                          |
 | [ConverseStream](https://docs.aws.amazon.com/bedrock/latest/APIReference/API_runtime_ConverseStream.html) | `POST /model/{modelId}/converse-stream` | ✅ Full          | contentBlockDelta/messageStop events                      |
 | [CountTokens](https://docs.aws.amazon.com/bedrock/latest/APIReference/API_runtime_CountTokens.html) | `POST /model/{modelId}/count-tokens` | ✅ Full          | Approximation (len/4), not real tokenizer                 |
-| [ApplyGuardrail](https://docs.aws.amazon.com/bedrock/latest/APIReference/API_runtime_ApplyGuardrail.html) | `POST /guardrail/{guardrailId}/apply` | ✅ Full          | Keyword-based filte +ring via GUARDRAIL_BLOCKED_WORDS env |
+| [ApplyGuardrail](https://docs.aws.amazon.com/bedrock/latest/APIReference/API_runtime_ApplyGuardrail.html) | `POST /guardrail/{guardrailId}/apply` | ✅ Full          | Keyword-based filtering via GUARDRAIL_BLOCKED_WORDS env |
 | [InvokeModelWithBidirectionalStream](https://docs.aws.amazon.com/bedrock/latest/APIReference/API_runtime_InvokeModelWithBidirectionalStream.html) | | ❌ Not supported |                                                           |
 | [StartAsyncInvoke](https://docs.aws.amazon.com/bedrock/latest/APIReference/API_runtime_StartAsyncInvoke.html) | | ❌ Not supported |                                                           |
 | [GetAsyncInvoke](https://docs.aws.amazon.com/bedrock/latest/APIReference/API_runtime_GetAsyncInvoke.html) | | ❌ Not supported |                                                           |
@@ -27,7 +27,7 @@ Basaltrock server compatibility with AWS Bedrock SDK operations.
 | [InvokeAgent](https://docs.aws.amazon.com/bedrock/latest/APIReference/API_agent-runtime_InvokeAgent.html) | | ❌ Not supported | |
 | [InvokeInlineAgent](https://docs.aws.amazon.com/bedrock/latest/APIReference/API_agent-runtime_InvokeInlineAgent.html) | | ❌ Not supported | |
 | [InvokeFlow](https://docs.aws.amazon.com/bedrock/latest/APIReference/API_agent-runtime_InvokeFlow.html) | | ❌ Not supported | |
-| [Rerank](https://docs.aws.amazon.com/bedrock/latest/APIReference/API_agent-runtime_Rerank.html) | | ❌ Not supported | |
+| [Rerank](https://docs.aws.amazon.com/bedrock/latest/APIReference/API_agent-runtime_Rerank.html) | `POST /rerank` | ✅ Full | L2 distance scoring via embedding model |
 | [OptimizePrompt](https://docs.aws.amazon.com/bedrock/latest/APIReference/API_agent-runtime_OptimizePrompt.html) | | ❌ Not supported | |
 | [CreateSession](https://docs.aws.amazon.com/bedrock/latest/APIReference/API_agent-runtime_CreateSession.html) / [GetSession](https://docs.aws.amazon.com/bedrock/latest/APIReference/API_agent-runtime_GetSession.html) / [DeleteSession](https://docs.aws.amazon.com/bedrock/latest/APIReference/API_agent-runtime_DeleteSession.html) | | ❌ Not supported | |
 | [GenerateQuery](https://docs.aws.amazon.com/bedrock/latest/APIReference/API_agent-runtime_GenerateQuery.html) | | ❌ Not supported | |

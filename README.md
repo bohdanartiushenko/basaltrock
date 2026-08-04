@@ -8,7 +8,6 @@ A local, Docker-based test container for knowledge based chat systems that mimic
 
 - Testcontainers Integration (JUnit 5)
 - AWS Bedrock SDK Compatibility
-- Simple REST API for curl-based testing
 - OpenSearch k-NN vector search backend
 
 ## Quick Start
@@ -19,11 +18,13 @@ make up DATA_FOLDER=/path/to/data       # start RAG service
 make help                               # see all commands
 ```
 
-Then open **http://localhost:80**. You may input que
+Then open **http://localhost:80**.
 
 ![Screenshot](docs/screenshot_1_rag.png)
 
-## Testcontainer-like Usage Example
+## Testcontainer Usage
+
+See [TESTCONTAINERS.md](TESTCONTAINERS.md) for details.
 
 ```java
 @Testcontainers

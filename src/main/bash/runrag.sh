@@ -22,7 +22,7 @@ export MODEL_RUNNER_BASE_URL MODEL_RUNNER_LLM_CHAT MODEL_RUNNER_LLM_EMBEDDING DA
 docker compose up -d --build
 
 echo "Waiting for API to be ready..."
-until curl -sf http://localhost:80/health >/dev/null 2>&1; do
+until curl -sf -X POST http://localhost:80/model/health/count-tokens -H "Content-Type: application/json" -d '{"input":{}}' >/dev/null 2>&1; do
   sleep 2
 done
 

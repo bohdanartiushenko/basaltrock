@@ -10,7 +10,7 @@ from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import StreamingResponse
 from typing import AsyncIterator
 
-from shared import (client, vector_search, CHAT_MODEL, EXPECTED_KB_ID, MAX_SIMS,
+from shared import (client, embed, vector_search, CHAT_MODEL, EXPECTED_KB_ID, MAX_SIMS,
                      TEMPERATURE, MAX_TOKENS, RAG_SYSTEM_PROMPT_TEMPLATE, MIN_SCORE_FOR_ANSWER)
 
 logger = logging.getLogger(__name__)
@@ -316,6 +316,45 @@ async def retrieve_and_generate_stream(request: Request):
             logger.exception("RetrieveAndGenerateStream failed")
 
     return StreamingResponse(event_stream(), media_type="application/vnd.amazon.eventstream")
+
+
+def _l2_score(a, b):
+    l2 = sum((x - y) ** 2 for x, y in zip(a, b)) ** 0.5
+    return 1.0 / (1.0 + l2)
+
+
+@router.post("/rerank")
+async def rerank(request: Request):
+    body = await request.json()
+    queries = body.get("queries", [])
+    sources = body.get("sources", [])
+    query_text = queries[0].get("textQuery", {}).get("text", "") if queries else ""
+    if not query_text:
+        raise HTTPException(status_code=400, detail="Missing query text")
+
+    query_vec = embed(query_text)
+
+    doc_texts = []
+    for src in sources:
+        inline = src.get("inlineDocumentSource", {})
+        text = inline.get("textDocument", {}).get("text", "")
+        doc_texts.append(text if text else " ")
+
+    doc_vecs = [embed(t) for t in doc_texts]
+
+    scored = [(i, _l2_score(query_vec, dv), doc_texts[i]) for i, dv in enumerate(doc_vecs)]
+    scored.sort(key=lambda x: x[1], reverse=True)
+
+    return {
+        "results": [
+            {
+                "index": idx,
+                "relevanceScore": score,
+                "document": {"type": "TEXT", "textDocument": {"text": text}},
+            }
+            for idx, score, text in scored
+        ]
+    }
 
 
 @router.post("/knowledgebases/{knowledge_base_id}/retrieve")

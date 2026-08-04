@@ -31,8 +31,3 @@ def index(request: Request):
         context={"system_prompt": RAG_SYSTEM_PROMPT_TEMPLATE, "temperature": TEMPERATURE, "max_tokens": MAX_TOKENS, "kb_id": EXPECTED_KB_ID, "model_id": CHAT_MODEL},
     )
 
-
-@app.get("/health")
-def health():
-    count = os_client.count(index=INDEX_NAME, body={"query": {"match_all": {}}})["count"]
-    return {"status": "ok", "chunks": count}
