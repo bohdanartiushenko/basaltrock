@@ -2,12 +2,10 @@
 
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
-from fastapi.responses import FileResponse
 from fastapi.templating import Jinja2Templates
 
-from basaltrock_api import router as basaltrock_router
 from bedrock_api import router as bedrock_router
-from shared import os_client, INDEX_NAME, RAG_SYSTEM_PROMPT_TEMPLATE, TEMPERATURE, MAX_TOKENS
+from shared import os_client, INDEX_NAME, RAG_SYSTEM_PROMPT_TEMPLATE, TEMPERATURE, MAX_TOKENS, EXPECTED_KB_ID, CHAT_MODEL
 
 
 @asynccontextmanager
@@ -23,7 +21,6 @@ app = FastAPI(lifespan=lifespan)
 templates = Jinja2Templates(directory="/app")
 
 app.include_router(bedrock_router)
-app.include_router(basaltrock_router)
 
 
 @app.get("/")
@@ -31,7 +28,7 @@ def index(request: Request):
     return templates.TemplateResponse(
         request=request,
         name="index.html",
-        context={"system_prompt": RAG_SYSTEM_PROMPT_TEMPLATE, "temperature": TEMPERATURE, "max_tokens": MAX_TOKENS},
+        context={"system_prompt": RAG_SYSTEM_PROMPT_TEMPLATE, "temperature": TEMPERATURE, "max_tokens": MAX_TOKENS, "kb_id": EXPECTED_KB_ID, "model_id": CHAT_MODEL},
     )
 
 

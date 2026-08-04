@@ -3,7 +3,6 @@
 title <size:20>Basaltrock — Docker Compose Setup</size>
 
 actor "AWS SDK Client" as awsuser
-actor "REST Client" as curluser
 
 
 package localhost {
@@ -21,7 +20,6 @@ package "Docker Compose" {
   rectangle "API Container" as api #LightBlue {
     component "api.py"
     component "bedrock_api.py"
-    component "basaltrock_api.py"
     component "shared.py"
   }
 
@@ -41,7 +39,6 @@ package "Model Runner" #LightPink {
 
 
 awsuser --> api
-curluser --> api
 
 ingestion --> embedmodel : create embeddings
 api --> embedmodel : query embedding

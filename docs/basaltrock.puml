@@ -2,7 +2,6 @@
 
 
 actor "AWS SDK Bedrock Client" as awsuser
-actor "REST Client" as curluser
 
 
 package localhost {
@@ -27,7 +26,6 @@ package "Model Runner" #LightPink {
 
 
 awsuser --> api
-curluser --> api
 
 ingestion --> embedmodel : create embeddings
 api --> embedmodel : query embedding

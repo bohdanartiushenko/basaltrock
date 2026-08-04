@@ -29,6 +29,5 @@ WORKDIR /app
 COPY api.py /app/
 COPY shared.py /app/
 COPY bedrock_api.py /app/
-COPY basaltrock_api.py /app/
 COPY index.html /app/
 CMD ["hypercorn", "api:app", "--bind", "0.0.0.0:8080", "--access-logfile", "-"]
