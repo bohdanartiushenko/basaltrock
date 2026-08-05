@@ -12,5 +12,5 @@
     </root>
 
     <!-- Keep our examples at INFO -->
-    <logger name="com.basaltrock.examples" level="INFO"/>
+    <logger name="io.github.bohdanartiushenko.examples" level="INFO"/>
 </configuration>

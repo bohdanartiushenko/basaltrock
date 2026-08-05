@@ -3,7 +3,7 @@ plugins {
     id 'application'
 }
 
-group = 'com.basaltrock.examples'
+group = 'io.github.bohdanartiushenko.examples'
 version = '0.0.3'
 
 java {
@@ -21,12 +21,12 @@ dependencies {
 }
 
 application {
-    mainClass = 'com.basaltrock.examples.bedrock.ChatStreamingExample'
+    mainClass = 'io.github.bohdanartiushenko.examples.bedrock.ChatStreamingExample'
 }
 
 tasks.register('runChat', JavaExec) {
     classpath = sourceSets.main.runtimeClasspath
-    mainClass = 'com.basaltrock.examples.bedrock.ChatStreamingExample'
+    mainClass = 'io.github.bohdanartiushenko.examples.bedrock.ChatStreamingExample'
     if (project.hasProperty('args')) {
         args project.args.split('\\s+')
     }
@@ -34,7 +34,7 @@ tasks.register('runChat', JavaExec) {
 
 tasks.register('runKb', JavaExec) {
     classpath = sourceSets.main.runtimeClasspath
-    mainClass = 'com.basaltrock.examples.bedrock.KnowledgeBaseRetrievalExample'
+    mainClass = 'io.github.bohdanartiushenko.examples.bedrock.KnowledgeBaseRetrievalExample'
     if (project.hasProperty('args')) {
         args project.args.split('\\s+')
     }

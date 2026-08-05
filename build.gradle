@@ -3,7 +3,7 @@ plugins {
     id 'maven-publish'
 }
 
-group = 'com.basaltrock'
+group = 'io.github.bohdanartiushenko'
 version = '0.1.0'
 
 java {
@@ -16,7 +16,7 @@ publishing {
     publications {
         maven(MavenPublication) {
             from components.java
-            artifactId = 'basaltrock-testcontainers'
+            artifactId = 'basaltrock'
         }
     }
 }
