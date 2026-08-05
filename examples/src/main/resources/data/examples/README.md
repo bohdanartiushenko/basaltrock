@@ -3,7 +3,7 @@
 [![Java 21+](https://img.shields.io/badge/Java-21%2B-blue)](https://openjdk.org/)
 [![Gradle 9.5](https://img.shields.io/badge/Gradle-9.5-blue?logo=gradle)](https://gradle.org/)
 [![Docker 4.40+](https://img.shields.io/badge/Docker-4.40%2B%20(Model%20Runner)-blue?logo=docker)](https://www.docker.com/)
-[![JitPack](https://jitpack.io/v/bohdanartiushenko/basaltrock.svg)](https://jitpack.io/#bohdanartiushenko/basaltrock)
+[![Maven Central](https://img.shields.io/maven-central/v/io.github.bohdanartiushenko/basaltrock)](https://central.sonatype.com/artifact/io.github.bohdanartiushenko/basaltrock)
 
 Standalone project showing how to use Basaltrock as a dependency.
 
@@ -11,10 +11,10 @@ Standalone project showing how to use Basaltrock as a dependency.
 
 ```gradle
 repositories {
-    maven { url 'https://jitpack.io' }
+    mavenCentral()
 }
 dependencies {
-    implementation 'com.github.bohdanartiushenko:basaltrock:v0.0.3'
+    implementation 'io.github.bohdanartiushenko:basaltrock:0.2.0'
 }
 ```
 

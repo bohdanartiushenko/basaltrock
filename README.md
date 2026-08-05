@@ -3,7 +3,7 @@
 [![Java 17+](https://img.shields.io/badge/Java-17%2B-blue)](https://openjdk.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Docker 4.40+](https://img.shields.io/badge/Docker-4.40%2B%20(Model%20Runner)-blue?logo=docker)](https://www.docker.com/)
-[![JitPack](https://jitpack.io/v/bohdanartiushenko/basaltrock.svg)](https://jitpack.io/#bohdanartiushenko/basaltrock)
+[![Maven Central](https://img.shields.io/maven-central/v/io.github.bohdanartiushenko/basaltrock)](https://central.sonatype.com/artifact/io.github.bohdanartiushenko/basaltrock)
 [![Gradle 9.5](https://img.shields.io/badge/Gradle-9.5-blue?logo=gradle)](https://gradle.org/)
 [![Python 3.13](https://img.shields.io/badge/Python-3.13-blue?logo=python)](https://www.python.org/)
 [![Testcontainers](https://img.shields.io/badge/Testcontainers-2.0.5-blue?logo=docker)](https://testcontainers.com/)
