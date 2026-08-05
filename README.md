@@ -1,6 +1,6 @@
 # <img src="docs/icon.svg" width="32" alt="Basaltrock"/> Basaltrock
 
-[![Java 21+](https://img.shields.io/badge/Java-21%2B-blue)](https://openjdk.org/)
+[![Java 17+](https://img.shields.io/badge/Java-17%2B-blue)](https://openjdk.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Docker 4.40+](https://img.shields.io/badge/Docker-4.40%2B%20(Model%20Runner)-blue?logo=docker)](https://www.docker.com/)
 [![JitPack](https://jitpack.io/v/bohdanartiushenko/basaltrock.svg)](https://jitpack.io/#bohdanartiushenko/basaltrock)
@@ -63,7 +63,7 @@ public class MyTest {
 
 - Docker (with Model Runner support)
 - Make
-- Java 21+
+- Java 17+
 
 ### Minimum Hardware Requirements
 
