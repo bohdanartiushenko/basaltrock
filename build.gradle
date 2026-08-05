@@ -18,6 +18,29 @@ publishing {
         maven(MavenPublication) {
             from components.java
             artifactId = 'basaltrock'
+            pom {
+                name = 'Basaltrock'
+                description = 'Docker-based testcontainer for knowledge-based chat systems mimicking the AWS Bedrock API'
+                url = 'https://github.com/bohdanartiushenko/basaltrock'
+                licenses {
+                    license {
+                        name = 'MIT License'
+                        url = 'https://opensource.org/licenses/MIT'
+                    }
+                }
+                developers {
+                    developer {
+                        id = 'bohdanartiushenko'
+                        name = 'Bohdan Artiushenko'
+                        url = 'https://github.com/bohdanartiushenko'
+                    }
+                }
+                scm {
+                    url = 'https://github.com/bohdanartiushenko/basaltrock'
+                    connection = 'scm:git:git://github.com/bohdanartiushenko/basaltrock.git'
+                    developerConnection = 'scm:git:ssh://git@github.com/bohdanartiushenko/basaltrock.git'
+                }
+            }
         }
     }
 }
