@@ -21,6 +21,34 @@ def _encode_header(name: str, value: str) -> bytes:
     nb, vb = name.encode(), value.encode()
     return struct.pack("B", len(nb)) + nb + struct.pack("B", 7) + struct.pack(">H", len(vb)) + vb
 
+@router.post("/optimize-prompt")
+async def optimize_prompt(request: Request):
+    body = await request.json()
+    input_text = body.get("input", {}).get("textPrompt", {}).get("text", "")
+    if not input_text:
+        raise HTTPException(status_code=400, detail="Missing input text")
+
+    response = client.chat.completions.create(
+        model=CHAT_MODEL,
+        messages=[
+            {"role": "system", "content": "Rewrite the following prompt to be clearer, more specific, and more effective. Return only the improved prompt text, nothing else."},
+            {"role": "user", "content": input_text},
+        ],
+        temperature=TEMPERATURE,
+        max_tokens=MAX_TOKENS,
+    )
+    optimized = response.choices[0].message.content or input_text
+
+    async def event_stream() -> AsyncIterator[bytes]:
+        payload = json.dumps({"optimizedPrompt": {"textPrompt": {"text": optimized}}}).encode()
+        yield _encode_event(payload, "optimizedPromptEvent")
+
+    return StreamingResponse(event_stream(), media_type="application/vnd.amazon.eventstream")
+
+
+def _l2_score(a, b):
+    l2 = sum((x - y) ** 2 for x, y in zip(a, b)) ** 0.5
+    return 1.0 / (1.0 + l2)
 
 _STATIC_HEADERS: bytes = (
         _encode_header(":event-type", "chunk")
@@ -316,11 +344,6 @@ async def retrieve_and_generate_stream(request: Request):
             logger.exception("RetrieveAndGenerateStream failed")
 
     return StreamingResponse(event_stream(), media_type="application/vnd.amazon.eventstream")
-
-
-def _l2_score(a, b):
-    l2 = sum((x - y) ** 2 for x, y in zip(a, b)) ** 0.5
-    return 1.0 / (1.0 + l2)
 
 
 @router.post("/rerank")
