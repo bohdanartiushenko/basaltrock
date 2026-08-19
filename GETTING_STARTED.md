@@ -18,9 +18,15 @@ make help                               # all commands
 ## Testing with curl
 
 ```bash
-curl "http://localhost:80/basaltrock/chat?q=What+is+machine+learning"
-curl "http://localhost:80/basaltrock/search?q=testcontainers&limit=5"
-curl "http://localhost:80/basaltrock/search/kb?q=How+do+I+use+testcontainers"
+# Retrieve from knowledge base
+curl -X POST http://localhost:80/knowledgebases/basaltrock-knowledge-base-id/retrieve \
+  -H "Content-Type: application/json" \
+  -d '{"retrievalQuery":{"text":"testcontainers"},"retrievalConfiguration":{"vectorSearchConfiguration":{"numberOfResults":5}}}'
+
+# RAG: retrieve and generate
+curl -X POST http://localhost:80/retrieveAndGenerate \
+  -H "Content-Type: application/json" \
+  -d '{"input":{"text":"How do I use testcontainers?"},"retrieveAndGenerateConfiguration":{"type":"KNOWLEDGE_BASE","knowledgeBaseConfiguration":{"knowledgeBaseId":"basaltrock-knowledge-base-id","modelArn":"ai/gemma3:1B-Q4_K_M","retrievalConfiguration":{"vectorSearchConfiguration":{"numberOfResults":5}}}}}'
 ```
 
 ## Test Data
