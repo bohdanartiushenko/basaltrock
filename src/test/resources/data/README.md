@@ -77,6 +77,10 @@ Single query (200 tokens response): ~5 seconds end-to-end with GPU offload.
 - **[examples/](examples/)** - Standalone examples
 - **[BEDROCK_API_COMPATIBILITY.md](BEDROCK_API_COMPATIBILITY.md)** - Supported AWS Bedrock API operations
 
+## Talks & Demos
+
+- [How to run LLM + KB locally](https://youtu.be/Ds_qU_8cmQs) (Ukrainian)
+
 ## License
 
 See [LICENSE](LICENSE).

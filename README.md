@@ -1,5 +1,9 @@
 # Basaltrock
 
+[![Java 21+](https://img.shields.io/badge/Java-21%2B-blue)](https://openjdk.org/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![Docker](https://img.shields.io/badge/Docker-required-blue?logo=docker)](https://www.docker.com/)
+
 A local, Docker-based test container for knowledge based chat systems that mimics the AWS Bedrock API.
 
 ![Basaltrock Architecture](docs/basaltrock.png)
@@ -76,6 +80,10 @@ Single query (200 tokens response): ~5 seconds end-to-end with GPU offload.
 - **[DOCKER_SETUP.md](DOCKER_SETUP.md)** - Docker setup and configuration
 - **[examples/](examples/)** - Standalone examples
 - **[BEDROCK_API_COMPATIBILITY.md](BEDROCK_API_COMPATIBILITY.md)** - Supported AWS Bedrock API operations
+
+## Talks & Demos
+
+- [How to run LLM + KB locally](https://youtu.be/Ds_qU_8cmQs) (Ukrainian)
 
 ## License
 
