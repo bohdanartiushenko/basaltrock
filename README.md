@@ -70,7 +70,7 @@ public class MyTest {
 | Component | RAM | GPU VRAM | Disk | CPU core @ 4.5 GHz (peak, during single query, % of 1 core) | GPU core @ 1.6 GHz (peak, during single query, % of device) |
 |-----------|-----|----------|------|-------------------------------------------------------------|-------------------------------------------------------------|
 | OpenSearch 2.11.0 | 1.3 GB | — | ~1 GB (image + indices) | ~2-4% | — |
-| `ai/gemma3:1B-Q4_K_M` (chat) | 29 MB | 827 MB | 769 MB | <1% | ~90-94% |
+| `ai/gemma4:e2b-safetensors` (chat) | 29 MB | 827 MB | 769 MB | <1% | ~90-94% |
 | `ai/nomic-embed-text-v2-moe` (embedding) | 29 MB | 907 MB | 913 MB | <1% | ~60% |
 | API service | 105 MB | — | ~200 MB | <1% | — |
 | Ingestion service | ~256 MB | — | ~200 MB | — | — |

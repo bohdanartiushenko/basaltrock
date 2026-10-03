@@ -26,7 +26,7 @@ curl -X POST http://localhost:80/knowledgebases/basaltrock-knowledge-base-id/ret
 # RAG: retrieve and generate
 curl -X POST http://localhost:80/retrieveAndGenerate \
   -H "Content-Type: application/json" \
-  -d '{"input":{"text":"How do I use testcontainers?"},"retrieveAndGenerateConfiguration":{"type":"KNOWLEDGE_BASE","knowledgeBaseConfiguration":{"knowledgeBaseId":"basaltrock-knowledge-base-id","modelArn":"ai/gemma3:1B-Q4_K_M","retrievalConfiguration":{"vectorSearchConfiguration":{"numberOfResults":5}}}}}'
+  -d '{"input":{"text":"How do I use testcontainers?"},"retrieveAndGenerateConfiguration":{"type":"KNOWLEDGE_BASE","knowledgeBaseConfiguration":{"knowledgeBaseId":"basaltrock-knowledge-base-id","modelArn":"ai/gemma4:e2b-safetensors","retrievalConfiguration":{"vectorSearchConfiguration":{"numberOfResults":5}}}}}'
 ```
 
 ## Test Data

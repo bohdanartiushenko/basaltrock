@@ -79,7 +79,7 @@ volumes:
 
 models:
   chat-model:
-    model: ai/gemma3:1B-Q4_K_M
+    model: ai/gemma4:e2b-safetensors
 
   embedding-model:
     model: ai/nomic-embed-text-v2-moe

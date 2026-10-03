@@ -25,7 +25,7 @@ package "Docker Compose" {
 
 package "Model Runner" #LightPink {
   rectangle "llama.cpp" as modelrunner
-  component "Chat Model\nai/gemma3:1B-Q4_K_M" as chatmodel
+  component "Chat Model\nai/gemma4:e2b-safetensors" as chatmodel
   component "Embedding Model\nai/nomic-embed-text-v2-moe" as embedmodel
 
   modelrunner --> chatmodel

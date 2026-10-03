@@ -4,7 +4,7 @@ set -e
 DOCKER_DIR="src/main/resources/opensearch/docker"
 DATA_FOLDER="${1:-${DATA_FOLDER:-src/test/resources/data}}"
 MODEL_RUNNER_BASE_URL="${MODEL_RUNNER_BASE_URL:-}"
-MODEL_RUNNER_LLM_CHAT="${MODEL_RUNNER_LLM_CHAT:-ai/gemma3:1B-Q4_K_M}"
+MODEL_RUNNER_LLM_CHAT="${MODEL_RUNNER_LLM_CHAT:-ai/gemma4:e2b-safetensors}"
 MODEL_RUNNER_LLM_EMBEDDING="${MODEL_RUNNER_LLM_EMBEDDING:-ai/nomic-embed-text-v2-moe}"
 
 DATA_FOLDER_PATH=$(cd "$DATA_FOLDER" && pwd)
