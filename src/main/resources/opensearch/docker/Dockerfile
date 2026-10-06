@@ -7,7 +7,9 @@ RUN pip install --no-cache-dir \
     langchain-text-splitters==0.3.5 \
     pypdf==5.1.0 \
     python-docx==1.1.2 \
-    openpyxl==3.1.5
+    openpyxl==3.1.5 \
+    xlrd==2.0.1 \
+    olefile==0.47
 
 WORKDIR /app
 COPY ingestion.py /app/

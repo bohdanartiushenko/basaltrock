@@ -4,7 +4,10 @@ import csv
 import hashlib
 import os
 import pathlib
+import struct
 
+import olefile
+import xlrd
 from bs4 import BeautifulSoup
 from docx import Document
 from langchain_text_splitters import RecursiveCharacterTextSplitter
@@ -21,6 +24,7 @@ EMBED_MODEL = os.environ.get("MODEL_RUNNER_LLM_EMBEDDING", "ai/nomic-embed-text-
 DATA_DIR = os.environ.get("DATA_DIR", "/app/data")
 OPENSEARCH_URL = os.environ.get("OPENSEARCH_URL", "http://opensearch:9200")
 INDEX_NAME = os.environ.get("INDEX_NAME", "basaltrock-knowledge-base-default-index")
+DOC_ANSI_CODEPAGE = os.environ.get("DOC_ANSI_CODEPAGE", "cp1251")
 
 client = OpenAI(base_url=BASE_URL, api_key="dummy")
 os_client = OpenSearch([OPENSEARCH_URL], use_ssl=False, verify_certs=False)
@@ -39,6 +43,36 @@ def _embed(texts: list[str], batch_size: int = 10) -> list[list[float]]:
     return embeddings
 
 
+def _extract_doc(f: pathlib.Path) -> str:
+    with olefile.OleFileIO(f) as ole:
+        wd = ole.openstream("WordDocument").read()
+        flags = struct.unpack_from("<H", wd, 0x0A)[0]
+        fc_clx, lcb_clx = struct.unpack_from("<iI", wd, 0x01A2)
+        stream = ole.openstream("1Table" if flags & 0x0200 else "0Table")
+        stream.seek(fc_clx)
+        clx = stream.read(lcb_clx)
+
+    i = 0
+    while i < len(clx) and clx[i] == 0x01:
+        i += 3 + struct.unpack_from("<h", clx, i + 1)[0]
+    lcb_pt = struct.unpack_from("<I", clx, i + 1)[0]
+    pt = clx[i + 5:i + 5 + lcb_pt]
+
+    n = (lcb_pt - 4) // 12
+    cps = struct.unpack_from(f"<{n + 1}I", pt)
+
+    parts = []
+    for k in range(n):
+        fc = struct.unpack_from("<I", pt, 4 * (n + 1) + 8 * k + 2)[0]
+        cch = cps[k + 1] - cps[k]
+        compressed = fc & 0x40000000
+        start = (fc & ~0x40000000) // 2 if compressed else fc
+        width, codec = (1, DOC_ANSI_CODEPAGE) if compressed else (2, "utf-16-le")
+        parts.append(wd[start:start + cch * width].decode(codec, "replace"))
+
+    return "".join(parts).replace("\r", "\n")
+
+
 def _extract_text(f: pathlib.Path) -> str:
     suffix = f.suffix.lower()
 
@@ -46,17 +80,21 @@ def _extract_text(f: pathlib.Path) -> str:
         reader = PdfReader(f)
         return "\n".join(page.extract_text() for page in reader.pages)
 
-    if suffix in [".doc", ".docx"]:
+    if suffix == ".docx":
         doc = Document(f)
         return "\n".join(p.text for p in doc.paragraphs)
 
+    if suffix == ".doc":
+        return _extract_doc(f)
+
     if suffix in [".xls", ".xlsx"]:
-        wb = load_workbook(f, data_only=True)
-        lines = []
-        for sheet in wb.worksheets:
-            for row in sheet.iter_rows(values_only=True):
-                lines.append("\t".join(str(cell) if cell is not None else "" for cell in row))
-        return "\n".join(lines)
+        if suffix == ".xlsx":
+            rows = (row for sheet in load_workbook(f, data_only=True).worksheets
+                    for row in sheet.iter_rows(values_only=True))
+        else:
+            rows = (sheet.row_values(r) for sheet in xlrd.open_workbook(f).sheets()
+                    for r in range(sheet.nrows))
+        return "\n".join("\t".join("" if c is None else str(c) for c in row) for row in rows)
 
     if suffix == ".csv":
         with open(f, encoding="utf-8", errors="ignore") as csvfile:

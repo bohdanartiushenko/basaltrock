@@ -10,6 +10,9 @@ DATA_FOLDER ?= src/test/resources/data
 MODEL_RUNNER_BASE_URL ?=
 MODEL_RUNNER_LLM_CHAT ?= ai/gemma4:e2b-safetensors
 MODEL_RUNNER_LLM_EMBEDDING ?= ai/nomic-embed-text-v2-moe
+DOC_ANSI_CODEPAGE ?= cp1251
+
+export DOC_ANSI_CODEPAGE
 
 .PHONY: all build compile test docker-test clean check-docker docker-build up down restart ingest redeploy-api prune example-chat example-kb license logs status help version
 
