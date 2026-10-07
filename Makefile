@@ -11,10 +11,12 @@ MODEL_RUNNER_BASE_URL ?=
 MODEL_RUNNER_LLM_CHAT ?= ai/gemma4:e2b-safetensors
 MODEL_RUNNER_LLM_EMBEDDING ?= ai/nomic-embed-text-v2-moe
 DOC_ANSI_CODEPAGE ?= cp1251
+MODEL_KEEP_ALIVE ?= -1
+MODEL_CONTEXT_SIZE ?= 32768
 
 export DOC_ANSI_CODEPAGE
 
-.PHONY: all build compile test docker-test clean check-docker docker-build up down restart ingest redeploy-api prune example-chat example-kb license logs status help version
+.PHONY: all build compile test docker-test clean check-docker docker-build up down restart ingest redeploy-api prune example-chat example-kb license logs status help version tune-models
 
 all: build
 
@@ -38,6 +40,10 @@ docker-test: down test
 
 clean: down
 	./gradlew clean
+
+tune-models: check-docker
+	@docker model configure --keep-alive=$(MODEL_KEEP_ALIVE) --context-size=$(MODEL_CONTEXT_SIZE) $(MODEL_RUNNER_LLM_CHAT)
+	@docker model configure show $(MODEL_RUNNER_LLM_CHAT)
 
 up: docker-build
 	@./src/main/bash/runrag.sh $(DATA_FOLDER)
@@ -85,6 +91,7 @@ help:
 	@echo "make logs           - Follow Docker compose logs"
 	@echo "make status         - Show running containers"
 	@echo "make ingest         - Run ingestion job"
+	@echo "make tune-models    - Apply keep-alive/context-size to chat model"
 	@echo "make redeploy-api   - Redeploy only API service"
 	@echo "make clean          - Stop containers + gradle clean"
 	@echo "make example-chat   - Run chat example"
