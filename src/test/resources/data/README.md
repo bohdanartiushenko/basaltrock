@@ -60,13 +60,13 @@ public class MyTest {
 | Component | RAM | GPU VRAM | Disk | CPU core @ 4.5 GHz (peak, during single query, % of 1 core) | GPU core @ 1.6 GHz (peak, during single query, % of device) |
 |-----------|-----|----------|------|-------------------------------------------------------------|-------------------------------------------------------------|
 | OpenSearch 2.11.0 | 1.3 GB | — | ~1 GB (image + indices) | ~2-4% | — |
-| `ai/gemma4:e2b-q4_K_M` (chat) | 29 MB | 3.1 GB | 3.8 GB | <1% | ~90-94% |
+| `ai/gemma3:1B-Q4_K_M` (chat) | 29 MB | 827 MB | 769 MB | <1% | ~90-94% |
 | `ai/nomic-embed-text-v2-moe` (embedding) | 29 MB | 907 MB | 913 MB | <1% | ~60% |
 | API service | 105 MB | — | ~200 MB | <1% | — |
 | Ingestion service | ~256 MB | — | ~200 MB | — | — |
-| **Total** | **~1.8 GB** | **~4.0 GB** | **~6.2 GB** | | |
+| **Total** | **~1.8 GB** | **~1.7 GB** | **~3.2 GB** | | |
 
-Single query (200 tokens response): ~4 seconds end-to-end with GPU offload (~70 tok/s generation).
+Single query (200 tokens response): ~5 seconds end-to-end with GPU offload.
 
 
 ## Documentation

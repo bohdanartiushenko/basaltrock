@@ -80,7 +80,7 @@ volumes:
 
 models:
   chat-model:
-    model: ai/gemma4:e2b-q4_K_M
+    model: ai/gemma3:1B-Q4_K_M
 
   embedding-model:
     model: ai/nomic-embed-text-v2-moe
