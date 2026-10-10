@@ -45,7 +45,7 @@ package basaltrock {
 
 package "Model Runner" #LightPink {
   rectangle "llama.cpp" as modelrunner
-  component "ai/gemma4:e2b-safetensors\nChat Model" as chatmodel
+  component "ai/gemma4:e2b-q4_K_M\nChat Model" as chatmodel
   component "ai/nomic-embed-text-v2-moe\nEmbedding Model" as embedmodel
 
   modelrunner --> chatmodel

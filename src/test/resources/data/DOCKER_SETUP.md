@@ -18,7 +18,7 @@ See [BEDROCK_API_COMPATIBILITY.md](BEDROCK_API_COMPATIBILITY.md) for full list.
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `MODEL_RUNNER_BASE_URL` | - | Model runner endpoint |
-| `MODEL_RUNNER_LLM_CHAT` | `ai/gemma4:e2b-safetensors` | Chat model |
+| `MODEL_RUNNER_LLM_CHAT` | `ai/gemma4:e2b-q4_K_M` | Chat model |
 | `MODEL_RUNNER_LLM_EMBEDDING` | `ai/nomic-embed-text-v2-moe` | Embedding model |
 | `KNOWLEDGE_BASE_ID` | `basaltrock-knowledge-base-id` | Knowledge base identifier |
 | `MIN_SCORE` | `0` | Min similarity score for retrieval |

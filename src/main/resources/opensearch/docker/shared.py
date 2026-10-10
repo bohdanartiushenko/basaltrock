@@ -8,7 +8,7 @@ BASE_URL = os.environ.get(
     "MODEL_RUNNER_BASE_URL",
     "http://model-runner.docker.internal/engines/llama.cpp/v1/",
 )
-CHAT_MODEL = os.environ.get("MODEL_RUNNER_LLM_CHAT", "ai/gemma4:e2b-safetensors")
+CHAT_MODEL = os.environ.get("MODEL_RUNNER_LLM_CHAT", "ai/gemma4:e2b-q4_K_M")
 EMBED_MODEL = os.environ.get("MODEL_RUNNER_LLM_EMBEDDING", "ai/nomic-embed-text-v2-moe")
 OPENSEARCH_URL = os.environ.get("OPENSEARCH_URL", "http://opensearch:9200")
 INDEX_NAME = os.environ.get("INDEX_NAME", "basaltrock-knowledge-base-default-index")
